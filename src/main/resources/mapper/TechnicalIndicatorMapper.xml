@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m07.mapper.TechnicalIndicatorMapper">
+
+    <!-- ========== Result Map ========== -->
+
+    <resultMap id="TechnicalIndicatorMap" type="com.chris.fin_shark.m07.domain.TechnicalIndicator">
+        <id column="indicator_id" property="indicatorId"/>
+        <result column="stock_id" property="stockId"/>
+        <result column="calculation_date" property="calculationDate"/>
+        <result column="trend_indicators" property="trendIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="momentum_indicators" property="momentumIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="volatility_indicators" property="volatilityIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="volume_indicators" property="volumeIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="support_resistance" property="supportResistance"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="cycle_indicators" property="cycleIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="statistical_indicators" property="statisticalIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="composite_indicators" property="compositeIndicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result column="ma5" property="ma5"/>
+        <result column="ma20" property="ma20"/>
+        <result column="ma60" property="ma60"/>
+        <result column="rsi_14" property="rsi14"/>
+        <result column="macd_value" property="macdValue"/>
+        <result column="stoch_k" property="stochK"/>
+        <result column="stoch_d" property="stochD"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- ========== 批次 UPSERT ========== -->
+
+    <insert id="batchUpsert">
+        INSERT INTO technical_indicators (
+        stock_id,
+        calculation_date,
+        trend_indicators,
+        momentum_indicators,
+        volatility_indicators,
+        volume_indicators,
+        support_resistance,
+        cycle_indicators,
+        statistical_indicators,
+        composite_indicators,
+        ma5, ma20, ma60,
+        ema12, ema26,
+        macd_value, macd_signal, macd_histogram,
+        rsi_14,
+        stoch_k, stoch_d,
+        bbands_upper, bbands_middle, bbands_lower,
+        atr_14,
+        obv,
+        adx_14,
+        calculation_version,
+        calculation_engine
+        ) VALUES
+        <foreach collection="indicators" item="ind" separator=",">
+            (
+            #{ind.stockId},
+            #{ind.calculationDate},
+            #{ind.trendIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.momentumIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.volatilityIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.volumeIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.supportResistance, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.cycleIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.statisticalIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.compositeIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{ind.ma5}, #{ind.ma20}, #{ind.ma60},
+            #{ind.ema12}, #{ind.ema26},
+            #{ind.macdValue}, #{ind.macdSignal}, #{ind.macdHistogram},
+            #{ind.rsi14},
+            #{ind.stochK}, #{ind.stochD},
+            #{ind.bbandsUpper}, #{ind.bbandsMiddle}, #{ind.bbandsLower},
+            #{ind.atr14},
+            #{ind.obv},
+            #{ind.adx14},
+            #{ind.calculationVersion},
+            #{ind.calculationEngine}
+            )
+        </foreach>
+        ON CONFLICT (stock_id, calculation_date)
+        DO UPDATE SET
+        trend_indicators = EXCLUDED.trend_indicators,
+        momentum_indicators = EXCLUDED.momentum_indicators,
+        volatility_indicators = EXCLUDED.volatility_indicators,
+        volume_indicators = EXCLUDED.volume_indicators,
+        ma5 = EXCLUDED.ma5,
+        ma20 = EXCLUDED.ma20,
+        ma60 = EXCLUDED.ma60,
+        rsi_14 = EXCLUDED.rsi_14,
+        macd_value = EXCLUDED.macd_value,
+        stoch_k = EXCLUDED.stoch_k,
+        stoch_d = EXCLUDED.stoch_d,
+        bbands_upper = EXCLUDED.bbands_upper,
+        bbands_middle = EXCLUDED.bbands_middle,
+        bbands_lower = EXCLUDED.bbands_lower,
+        atr_14 = EXCLUDED.atr_14,
+        obv = EXCLUDED.obv,
+        adx_14 = EXCLUDED.adx_14,
+        calculation_version = EXCLUDED.calculation_version,
+        updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- ========== 批次查詢 ========== -->
+
+    <select id="findByStockIdsAndDate" resultMap="TechnicalIndicatorMap">
+        SELECT * FROM technical_indicators
+        WHERE stock_id IN
+        <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+        AND calculation_date = #{date}
+        ORDER BY stock_id
+    </select>
+
+    <!-- ========== 查詢最新指標 ========== -->
+
+    <select id="findLatestIndicators" resultMap="TechnicalIndicatorMap">
+        SELECT t1.*
+        FROM technical_indicators t1
+        INNER JOIN (
+        SELECT stock_id, MAX(calculation_date) as max_date
+        FROM technical_indicators
+        WHERE stock_id IN
+        <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+        GROUP BY stock_id
+        ) t2 ON t1.stock_id = t2.stock_id AND t1.calculation_date = t2.max_date
+        ORDER BY t1.stock_id
+    </select>
+
+    <!-- ========== 黃金交叉偵測 ========== -->
+
+    <select id="findGoldenCrossCandidates" resultType="map">
+        WITH today_data AS (
+        SELECT stock_id, ma5, ma20, calculation_date
+        FROM technical_indicators
+        WHERE calculation_date = #{date}
+        ),
+        yesterday_data AS (
+        SELECT t1.stock_id, t1.ma5, t1.ma20
+        FROM technical_indicators t1
+        INNER JOIN (
+        SELECT stock_id, MAX(calculation_date) as max_date
+        FROM technical_indicators
+        WHERE calculation_date &lt; #{date}
+        GROUP BY stock_id
+        ) t2 ON t1.stock_id = t2.stock_id AND t1.calculation_date = t2.max_date
+        )
+        SELECT
+        t.stock_id,
+        t.calculation_date as cross_date,
+        t.ma5 as today_ma5,
+        t.ma20 as today_ma20,
+        y.ma5 as yesterday_ma5,
+        y.ma20 as yesterday_ma20,
+        'GOLDEN_CROSS' as signal_type
+        FROM today_data t
+        INNER JOIN yesterday_data y ON t.stock_id = y.stock_id
+        WHERE y.ma5 &lt; y.ma20
+        AND t.ma5 &gt; t.ma20
+        AND t.ma5 IS NOT NULL
+        AND t.ma20 IS NOT NULL
+    </select>
+
+    <!-- ========== 死亡交叉偵測 ========== -->
+
+    <select id="findDeathCrossCandidates" resultType="map">
+        WITH today_data AS (
+        SELECT stock_id, ma5, ma20, calculation_date
+        FROM technical_indicators
+        WHERE calculation_date = #{date}
+        ),
+        yesterday_data AS (
+        SELECT t1.stock_id, t1.ma5, t1.ma20
+        FROM technical_indicators t1
+        INNER JOIN (
+        SELECT stock_id, MAX(calculation_date) as max_date
+        FROM technical_indicators
+        WHERE calculation_date &lt; #{date}
+        GROUP BY stock_id
+        ) t2 ON t1.stock_id = t2.stock_id AND t1.calculation_date = t2.max_date
+        )
+        SELECT
+        t.stock_id,
+        t.calculation_date as cross_date,
+        t.ma5 as today_ma5,
+        t.ma20 as today_ma20,
+        y.ma5 as yesterday_ma5,
+        y.ma20 as yesterday_ma20,
+        'DEATH_CROSS' as signal_type
+        FROM today_data t
+        INNER JOIN yesterday_data y ON t.stock_id = y.stock_id
+        WHERE y.ma5 &gt; y.ma20
+        AND t.ma5 &lt; t.ma20
+        AND t.ma5 IS NOT NULL
+        AND t.ma20 IS NOT NULL
+    </select>
+
+    <!-- ========== 超買偵測 ========== -->
+
+    <select id="findOverboughtStocks" resultType="map">
+        SELECT
+        stock_id,
+        calculation_date,
+        rsi_14,
+        stoch_k,
+        stoch_d,
+        'OVERBOUGHT' as signal_type
+        FROM technical_indicators
+        WHERE calculation_date = #{date}
+        AND (rsi_14 &gt; 70 OR stoch_k &gt; 80)
+        ORDER BY rsi_14 DESC
+    </select>
+
+    <!-- ========== 超賣偵測 ========== -->
+
+    <select id="findOversoldStocks" resultType="map">
+        SELECT
+        stock_id,
+        calculation_date,
+        rsi_14,
+        stoch_k,
+        stoch_d,
+        'OVERSOLD' as signal_type
+        FROM technical_indicators
+        WHERE calculation_date = #{date}
+        AND (rsi_14 &lt; 30 OR stoch_k &lt; 20)
+        ORDER BY rsi_14 ASC
+    </select>
+
+    <!-- ========== 回寫移動平均線至 stock_prices 表 ========== -->
+
+    <update id="updateMovingAveragesToStockPrices">
+        UPDATE stock_prices sp
+        SET
+        ma5 = ti.ma5,
+        ma20 = ti.ma20,
+        volume_ma5 = (
+        SELECT AVG(volume)
+        FROM stock_prices
+        WHERE stock_id = sp.stock_id
+        AND trade_date &lt;= sp.trade_date
+        ORDER BY trade_date DESC
+        LIMIT 5
+        ),
+        updated_at = CURRENT_TIMESTAMP
+        FROM technical_indicators ti
+        WHERE sp.stock_id = ti.stock_id
+        AND sp.trade_date = ti.calculation_date
+        AND sp.stock_id = #{stockId}
+        AND sp.trade_date BETWEEN #{startDate} AND #{endDate}
+    </update>
+
+</mapper>

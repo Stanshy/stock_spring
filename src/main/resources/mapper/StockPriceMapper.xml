@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m06.mapper.StockPriceMapper">
+
+    <!-- 批次插入股價資料 -->
+    <insert id="batchInsert">
+        INSERT INTO stock_prices (
+            stock_id, trade_date, open_price, high_price, low_price, close_price,
+            volume, turnover, transactions, change_price, change_percent,
+            created_at, updated_at
+        ) VALUES
+        <foreach collection="prices" item="price" separator=",">
+        (
+            #{price.stockId},
+            #{price.tradeDate},
+            #{price.openPrice},
+            #{price.highPrice},
+            #{price.lowPrice},
+            #{price.closePrice},
+            #{price.volume},
+            #{price.turnover},
+            #{price.transactions},
+            #{price.changePrice},
+            #{price.changePercent},
+            NOW(),
+            NOW()
+        )
+        </foreach>
+        ON CONFLICT (stock_id, trade_date)
+        DO UPDATE SET
+            open_price = EXCLUDED.open_price,
+            high_price = EXCLUDED.high_price,
+            low_price = EXCLUDED.low_price,
+            close_price = EXCLUDED.close_price,
+            volume = EXCLUDED.volume,
+            turnover = EXCLUDED.turnover,
+            transactions = EXCLUDED.transactions,
+            change_price = EXCLUDED.change_price,
+            change_percent = EXCLUDED.change_percent,
+            updated_at = NOW()
+    </insert>
+
+    <!-- 批次更新股價資料 -->
+    <update id="batchUpdate">
+        <foreach collection="prices" item="price" separator=";">
+            UPDATE stock_prices SET
+                open_price = #{price.openPrice},
+                high_price = #{price.highPrice},
+                low_price = #{price.lowPrice},
+                close_price = #{price.closePrice},
+                volume = #{price.volume},
+                turnover = #{price.turnover},
+                transactions = #{price.transactions},
+                change_price = #{price.changePrice},
+                change_percent = #{price.changePercent},
+                updated_at = NOW()
+            WHERE stock_id = #{price.stockId}
+              AND trade_date = #{price.tradeDate}
+        </foreach>
+    </update>
+
+    <!-- 查詢股價統計資訊（含移動平均線） -->
+    <select id="getStatistics" resultType="com.chris.fin_shark.m06.vo.StockPriceStatisticsVO">
+        SELECT
+            stock_id,
+            trade_date,
+            close_price,
+            volume,
+            change_percent,
+            AVG(close_price) OVER (
+                PARTITION BY stock_id
+                ORDER BY trade_date
+                ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
+            ) as ma5,
+            AVG(close_price) OVER (
+                PARTITION BY stock_id
+                ORDER BY trade_date
+                ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+            ) as ma20,
+            AVG(volume) OVER (
+                PARTITION BY stock_id
+                ORDER BY trade_date
+                ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
+            ) as volume_ma5
+        FROM stock_prices
+        WHERE stock_id = #{stockId}
+        ORDER BY trade_date DESC
+        LIMIT #{days}
+    </select>
+
+    <!-- 更新移動平均線 -->
+    <update id="updateMovingAverages">
+        WITH ma_calc AS (
+            SELECT
+                price_id,
+                trade_date,
+                AVG(close_price) OVER (
+                    PARTITION BY stock_id
+                    ORDER BY trade_date
+                    ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
+                ) as ma5_calc,
+                AVG(close_price) OVER (
+                    PARTITION BY stock_id
+                    ORDER BY trade_date
+                    ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+                ) as ma20_calc,
+                AVG(volume) OVER (
+                    PARTITION BY stock_id
+                    ORDER BY trade_date
+                    ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
+                ) as volume_ma5_calc
+            FROM stock_prices
+            WHERE stock_id = #{stockId}
+              AND trade_date BETWEEN #{startDate} AND #{endDate}
+        )
+        UPDATE stock_prices sp
+        SET
+            ma5 = ma_calc.ma5_calc,
+            ma20 = ma_calc.ma20_calc,
+            volume_ma5 = ma_calc.volume_ma5_calc,
+            updated_at = NOW()
+        FROM ma_calc
+        WHERE sp.price_id = ma_calc.price_id
+          AND sp.trade_date = ma_calc.trade_date
+    </update>
+
+    <!-- 查詢缺少的股價日期 -->
+    <select id="findMissingDates" resultType="java.time.LocalDate">
+        SELECT tc.calendar_date
+        FROM trading_calendar tc
+        LEFT JOIN stock_prices sp
+            ON tc.calendar_date = sp.trade_date
+            AND sp.stock_id = #{stockId}
+        WHERE tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND sp.price_id IS NULL
+        ORDER BY tc.calendar_date
+    </select>
+
+</mapper>

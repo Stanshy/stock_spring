@@ -1,0 +1,65 @@
+# ========================================
+# 生產環境配置
+# ========================================
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+spring:
+  # 生產環境資料庫（使用環境變數）
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://prod-db-server:5432/finshark}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 20000
+      leak-detection-threshold: 60000  # 連線洩漏偵測
+
+  # JPA 生產環境配置
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false  # 生產環境不顯示 SQL
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+
+# MyBatis 生產環境
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl  # 不記錄 SQL
+
+# 日誌配置（生產環境）
+logging:
+  level:
+    root: WARN
+    com.chris.fin_shark: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /var/log/fin-shark/fin-shark-prod.log
+    max-size: 50MB
+    max-history: 30
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] [%thread] %-5level %logger{50} - %msg%n"
+
+# Actuator 生產環境（僅開放必要端點）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized  # 需要授權才顯示詳細資訊
+  metrics:
+    export:
+      prometheus:
+        enabled: true

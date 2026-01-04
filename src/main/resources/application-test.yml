@@ -1,0 +1,48 @@
+# ========================================
+# 測試環境配置（單元測試/整合測試）
+# ========================================
+
+spring:
+  # 測試環境使用 H2 記憶體資料庫
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # JPA 測試環境配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 每次測試重建表結構
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# MyBatis 測試環境
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 輸出到標準輸出
+
+# 日誌配置（測試環境）
+logging:
+  level:
+    root: INFO
+    com.chris.fin_shark: DEBUG
+    org.springframework.test: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.mybatis: DEBUG
+
+# Actuator 測試環境
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
