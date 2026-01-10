@@ -1,6 +1,6 @@
 package com.chris.fin_shark.client;
 
-import com.chris.fin_shark.m06.dto.external.TwseStockPriceData;
+import com.chris.fin_shark.common.dto.external.TwseStockPriceData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

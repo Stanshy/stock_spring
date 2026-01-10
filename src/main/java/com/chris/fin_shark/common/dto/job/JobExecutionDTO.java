@@ -1,4 +1,4 @@
-package com.chris.fin_shark.m06.dto;
+package com.chris.fin_shark.common.dto.job;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

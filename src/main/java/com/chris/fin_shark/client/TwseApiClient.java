@@ -1,7 +1,7 @@
 package com.chris.fin_shark.client;
 
-import com.chris.fin_shark.m06.dto.external.TwseApiResponse;
-import com.chris.fin_shark.m06.dto.external.TwseStockPriceData;
+import com.chris.fin_shark.common.dto.external.TwseApiResponse;
+import com.chris.fin_shark.common.dto.external.TwseStockPriceData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

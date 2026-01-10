@@ -2,8 +2,8 @@ package com.chris.fin_shark.m06.controller;
 
 import com.chris.fin_shark.common.dto.ApiResponse;
 import com.chris.fin_shark.common.dto.PageResponse;
-import com.chris.fin_shark.m06.dto.JobExecutionDTO;
-import com.chris.fin_shark.m06.dto.JobStatusDTO;
+import com.chris.fin_shark.common.dto.job.JobExecutionDTO;
+import com.chris.fin_shark.common.dto.job.JobStatusDTO;
 import com.chris.fin_shark.m06.service.JobManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

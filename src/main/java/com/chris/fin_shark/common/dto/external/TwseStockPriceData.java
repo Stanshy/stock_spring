@@ -1,4 +1,4 @@
-package com.chris.fin_shark.m06.dto.external;
+package com.chris.fin_shark.common.dto.external;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

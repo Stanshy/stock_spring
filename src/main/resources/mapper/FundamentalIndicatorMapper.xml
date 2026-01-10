@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m08.mapper.FundamentalIndicatorMapper">
+
+    <!-- ResultMap 定義 -->
+    <resultMap id="FundamentalIndicatorResultMap" type="com.chris.fin_shark.m08.domain.FundamentalIndicator">
+        <!-- 主鍵 -->
+        <id property="indicatorId" column="indicator_id"/>
+
+        <!-- 業務主鍵 -->
+        <result property="stockId" column="stock_id"/>
+        <result property="year" column="year"/>
+        <result property="quarter" column="quarter"/>
+        <result property="reportType" column="report_type"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+
+        <!-- 基本資訊 -->
+        <result property="calculationDate" column="calculation_date"/>
+        <result property="stockPrice" column="stock_price"/>
+        <result property="calculationVersion" column="calculation_version"/>
+
+        <!-- JSONB 欄位 - 使用自訂 TypeHandler -->
+        <result property="valuationIndicators" column="valuation_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="profitabilityIndicators" column="profitability_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="financialStructureIndicators" column="financial_structure_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="solvencyIndicators" column="solvency_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="efficiencyIndicators" column="efficiency_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="cashFlowIndicators" column="cash_flow_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="growthIndicators" column="growth_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+        <result property="dividendIndicators" column="dividend_indicators"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+
+        <!-- 冗餘欄位（快速查詢） -->
+        <result property="peRatio" column="pe_ratio"/>
+        <result property="pbRatio" column="pb_ratio"/>
+        <result property="psRatio" column="ps_ratio"/>
+        <result property="roe" column="roe"/>
+        <result property="roa" column="roa"/>
+        <result property="grossMargin" column="gross_margin"/>
+        <result property="operatingMargin" column="operating_margin"/>
+        <result property="netMargin" column="net_margin"/>
+        <result property="eps" column="eps"/>
+        <result property="debtRatio" column="debt_ratio"/>
+        <result property="currentRatio" column="current_ratio"/>
+        <result property="quickRatio" column="quick_ratio"/>
+        <result property="fcf" column="fcf"/>
+        <result property="fcfYield" column="fcf_yield"/>
+        <result property="dividendYield" column="dividend_yield"/>
+        <result property="revenueGrowth" column="revenue_growth"/>
+        <result property="epsGrowth" column="eps_growth"/>
+
+        <!-- 時間戳 -->
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 批次 UPSERT（P0 核心功能） -->
+    <insert id="batchUpsert" parameterType="java.util.List">
+        INSERT INTO fundamental_indicators (
+        stock_id, year, quarter, report_type,
+        calculation_date, stock_price, calculation_version,
+        valuation_indicators, profitability_indicators,
+        financial_structure_indicators, solvency_indicators,
+        efficiency_indicators, cash_flow_indicators,
+        growth_indicators, dividend_indicators,
+        pe_ratio, pb_ratio, ps_ratio, roe, roa,
+        gross_margin, operating_margin, net_margin, eps,
+        debt_ratio, current_ratio, quick_ratio,
+        fcf, fcf_yield, dividend_yield,
+        revenue_growth, eps_growth,
+        created_at, updated_at
+        ) VALUES
+        <foreach collection="indicators" item="item" separator=",">
+            (
+            #{item.stockId},
+            #{item.year},
+            #{item.quarter},
+            #{item.reportType, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.calculationDate},
+            #{item.stockPrice},
+            #{item.calculationVersion},
+            #{item.valuationIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.profitabilityIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.financialStructureIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.solvencyIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.efficiencyIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.cashFlowIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.growthIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.dividendIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.peRatio},
+            #{item.pbRatio},
+            #{item.psRatio},
+            #{item.roe},
+            #{item.roa},
+            #{item.grossMargin},
+            #{item.operatingMargin},
+            #{item.netMargin},
+            #{item.eps},
+            #{item.debtRatio},
+            #{item.currentRatio},
+            #{item.quickRatio},
+            #{item.fcf},
+            #{item.fcfYield},
+            #{item.dividendYield},
+            #{item.revenueGrowth},
+            #{item.epsGrowth},
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+            )
+        </foreach>
+        ON CONFLICT (stock_id, year, quarter, report_type)
+        DO UPDATE SET
+        calculation_date = EXCLUDED.calculation_date,
+        stock_price = EXCLUDED.stock_price,
+        calculation_version = EXCLUDED.calculation_version,
+        valuation_indicators = EXCLUDED.valuation_indicators,
+        profitability_indicators = EXCLUDED.profitability_indicators,
+        financial_structure_indicators = EXCLUDED.financial_structure_indicators,
+        solvency_indicators = EXCLUDED.solvency_indicators,
+        efficiency_indicators = EXCLUDED.efficiency_indicators,
+        cash_flow_indicators = EXCLUDED.cash_flow_indicators,
+        growth_indicators = EXCLUDED.growth_indicators,
+        dividend_indicators = EXCLUDED.dividend_indicators,
+        pe_ratio = EXCLUDED.pe_ratio,
+        pb_ratio = EXCLUDED.pb_ratio,
+        ps_ratio = EXCLUDED.ps_ratio,
+        roe = EXCLUDED.roe,
+        roa = EXCLUDED.roa,
+        gross_margin = EXCLUDED.gross_margin,
+        operating_margin = EXCLUDED.operating_margin,
+        net_margin = EXCLUDED.net_margin,
+        eps = EXCLUDED.eps,
+        debt_ratio = EXCLUDED.debt_ratio,
+        current_ratio = EXCLUDED.current_ratio,
+        quick_ratio = EXCLUDED.quick_ratio,
+        fcf = EXCLUDED.fcf,
+        fcf_yield = EXCLUDED.fcf_yield,
+        dividend_yield = EXCLUDED.dividend_yield,
+        revenue_growth = EXCLUDED.revenue_growth,
+        eps_growth = EXCLUDED.eps_growth,
+        updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 批次查詢（P0 核心功能） -->
+    <select id="batchQuery" resultMap="FundamentalIndicatorResultMap">
+        SELECT *
+        FROM fundamental_indicators
+        WHERE stock_id IN
+        <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+        <if test="year != null">
+            AND year = #{year}
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+        ORDER BY stock_id, year DESC, quarter DESC
+    </select>
+
+    <!-- 查詢指標歷史趨勢（P0 核心功能） -->
+    <!-- 使用 CDATA 避免 < > 字元衝突 -->
+    <select id="queryTrend" resultType="com.chris.fin_shark.m08.vo.IndicatorTrendVO">
+        <![CDATA[
+        SELECT
+            stock_id AS stockId,
+            year,
+            quarter,
+            CASE
+                WHEN #{indicator} LIKE 'valuation%' THEN
+                    (valuation_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'profitability%' OR #{indicator} IN ('roe', 'roa', 'gross_margin', 'net_margin', 'eps') THEN
+                    (profitability_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'structure%' OR #{indicator} IN ('debt_ratio') THEN
+                    (financial_structure_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'solvency%' OR #{indicator} IN ('current_ratio', 'quick_ratio') THEN
+                    (solvency_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'efficiency%' THEN
+                    (efficiency_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'cash_flow%' THEN
+                    (cash_flow_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'growth%' THEN
+                    (growth_indicators->>#{indicator})::numeric
+                WHEN #{indicator} LIKE 'dividend%' THEN
+                    (dividend_indicators->>#{indicator})::numeric
+                ELSE NULL
+            END AS value
+        FROM fundamental_indicators
+        WHERE stock_id = #{stockId}
+          AND (year > #{startYear} OR (year = #{startYear} AND quarter >= #{startQuarter}))
+          AND (year < #{endYear} OR (year = #{endYear} AND quarter <= #{endQuarter}))
+        ORDER BY year ASC, quarter ASC
+        ]]>
+    </select>
+
+    <!-- 查詢需要更新的股票清單 -->
+    <select id="findStocksNeedingUpdate" resultType="java.lang.String">
+        SELECT DISTINCT fs.stock_id
+        FROM financial_statements fs
+        LEFT JOIN fundamental_indicators fi
+        ON fs.stock_id = fi.stock_id
+        AND fs.year = fi.year
+        AND fs.quarter = fi.quarter
+        WHERE fs.year = #{year}
+        AND fs.quarter = #{quarter}
+        AND fi.stock_id IS NULL
+    </select>
+
+</mapper>

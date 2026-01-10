@@ -8,7 +8,7 @@ import com.chris.fin_shark.common.enums.TriggerType;
 
 import com.chris.fin_shark.m06.domain.Stock;
 import com.chris.fin_shark.m06.domain.StockPrice;
-import com.chris.fin_shark.m06.dto.external.TwseStockPriceData;
+import com.chris.fin_shark.common.dto.external.TwseStockPriceData;
 import com.chris.fin_shark.m06.repository.JobExecutionRepository;
 import com.chris.fin_shark.m06.repository.StockPriceRepository;
 import com.chris.fin_shark.m06.repository.StockRepository;

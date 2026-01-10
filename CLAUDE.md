@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development Environment
+
+- Primary development OS: **Windows**
+- Prefer **PowerShell / Windows-compatible commands**.
+- Avoid bash-only syntax unless explicitly requested.
+- When providing commands, default to `mvnw.cmd` instead of `./mvnw`.
+
 ## Build & Development Commands
 
 ```bash
@@ -96,3 +103,12 @@ Comprehensive documentation exists in `docs/`:
 - `docs/specs/` - Functional and technical specifications
 - `docs/design/` - Architecture and database design
 - `docs/00-README-文件導航總覽.md` - Navigation guide
+
+
+## AI Collaboration Guidelines
+
+- Prefer explanation and analysis before making code changes, especially in M07/M08 calculation engines.
+- Keep changes small and reviewable. If a task affects many files, propose a plan first.
+- Do not modify database schema, migrations, or financial formulas unless explicitly requested.
+- Refactors should preserve behavior unless stated otherwise.
+- When uncertain, ask before editing.

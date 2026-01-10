@@ -1,7 +1,7 @@
 package com.chris.fin_shark.m06.converter;
 
 import com.chris.fin_shark.common.domain.JobExecution;
-import com.chris.fin_shark.m06.dto.JobExecutionDTO;
+import com.chris.fin_shark.common.dto.job.JobExecutionDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m08.mapper.FinancialScoreMapper">
+
+    <!-- ResultMap 定義 -->
+    <resultMap id="FinancialScoreResultMap" type="com.chris.fin_shark.m08.domain.FinancialScore">
+        <!-- 主鍵 -->
+        <id property="scoreId" column="score_id"/>
+
+        <!-- 業務主鍵 -->
+        <result property="stockId" column="stock_id"/>
+        <result property="year" column="year"/>
+        <result property="quarter" column="quarter"/>
+
+        <!-- 基本資訊 -->
+        <result property="calculationDate" column="calculation_date"/>
+
+        <!-- Piotroski F-Score -->
+        <result property="piotroskiFScore" column="piotroski_f_score"/>
+        <result property="piotroskiDetails" column="piotroski_details"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+
+        <!-- Altman Z-Score -->
+        <result property="altmanZScore" column="altman_z_score"/>
+        <result property="altmanStatus" column="altman_status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="altmanDetails" column="altman_details"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+
+        <!-- Beneish M-Score -->
+        <result property="beneishMScore" column="beneish_m_score"/>
+        <result property="beneishStatus" column="beneish_status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="beneishDetails" column="beneish_details"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+
+        <!-- Graham Score -->
+        <result property="grahamScore" column="graham_score"/>
+        <result property="grahamDetails" column="graham_details"
+                typeHandler="com.chris.fin_shark.common.handler.JsonbTypeHandler"/>
+
+        <!-- 綜合評分 -->
+        <result property="compositeScore" column="composite_score"/>
+        <result property="compositeGrade" column="composite_grade"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+
+        <!-- 時間戳 -->
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 批次 UPSERT -->
+    <insert id="batchUpsert" parameterType="java.util.List">
+        INSERT INTO financial_scores (
+        stock_id, year, quarter, calculation_date,
+        piotroski_f_score, piotroski_details,
+        altman_z_score, altman_status, altman_details,
+        beneish_m_score, beneish_status, beneish_details,
+        graham_score, graham_details,
+        composite_score, composite_grade,
+        created_at, updated_at
+        ) VALUES
+        <foreach collection="scores" item="item" separator=",">
+            (
+            #{item.stockId},
+            #{item.year},
+            #{item.quarter},
+            #{item.calculationDate},
+            #{item.piotroskiFScore},
+            #{item.piotroskiDetails, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.altmanZScore},
+            #{item.altmanStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.altmanDetails, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.beneishMScore},
+            #{item.beneishStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.beneishDetails, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.grahamScore},
+            #{item.grahamDetails, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.compositeScore},
+            #{item.compositeGrade, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+            )
+        </foreach>
+        ON CONFLICT (stock_id, year, quarter)
+        DO UPDATE SET
+        calculation_date = EXCLUDED.calculation_date,
+        piotroski_f_score = EXCLUDED.piotroski_f_score,
+        piotroski_details = EXCLUDED.piotroski_details,
+        altman_z_score = EXCLUDED.altman_z_score,
+        altman_status = EXCLUDED.altman_status,
+        altman_details = EXCLUDED.altman_details,
+        beneish_m_score = EXCLUDED.beneish_m_score,
+        beneish_status = EXCLUDED.beneish_status,
+        beneish_details = EXCLUDED.beneish_details,
+        graham_score = EXCLUDED.graham_score,
+        graham_details = EXCLUDED.graham_details,
+        composite_score = EXCLUDED.composite_score,
+        composite_grade = EXCLUDED.composite_grade,
+        updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 批次查詢 -->
+    <select id="batchQuery" resultMap="FinancialScoreResultMap">
+        SELECT *
+        FROM financial_scores
+        WHERE stock_id IN
+        <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+        <if test="year != null">
+            AND year = #{year}
+        </if>
+        <if test="quarter != null">
+            AND quarter = #{quarter}
+        </if>
+        ORDER BY stock_id, year DESC, quarter DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m08.mapper.FinancialAlertMapper">
+
+    <!-- 批次插入警示 -->
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="alertId">
+        INSERT INTO financial_alerts (
+        stock_id, year, quarter,
+        alert_type, alert_category, severity,
+        alert_message, alert_detail,
+        trigger_indicator, trigger_value, threshold_value,
+        alert_status, is_notified,
+        created_at, updated_at
+        ) VALUES
+        <foreach collection="alerts" item="item" separator=",">
+            (
+            #{item.stockId},
+            #{item.year},
+            #{item.quarter},
+            #{item.alertType},
+            #{item.alertCategory, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.severity, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.alertMessage},
+            #{item.alertDetail, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler}::jsonb,
+            #{item.triggerIndicator},
+            #{item.triggerValue},
+            #{item.thresholdValue},
+            #{item.alertStatus, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+            #{item.isNotified},
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批次更新警示狀態 -->
+    <update id="batchUpdateStatus">
+        UPDATE financial_alerts
+        SET alert_status = #{status, typeHandler=org.apache.ibatis.type.EnumTypeHandler},
+        updated_at = CURRENT_TIMESTAMP,
+        resolved_at = CASE WHEN #{status} = 'RESOLVED' THEN CURRENT_TIMESTAMP ELSE resolved_at END
+        WHERE alert_id IN
+        <foreach collection="alertIds" item="alertId" open="(" separator="," close=")">
+            #{alertId}
+        </foreach>
+    </update>
+
+</mapper>
