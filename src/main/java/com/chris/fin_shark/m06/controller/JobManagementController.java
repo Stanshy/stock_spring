@@ -1,9 +1,11 @@
 package com.chris.fin_shark.m06.controller;
 
+import com.chris.fin_shark.common.domain.JobExecution;
 import com.chris.fin_shark.common.dto.ApiResponse;
 import com.chris.fin_shark.common.dto.PageResponse;
 import com.chris.fin_shark.common.dto.job.JobExecutionDTO;
 import com.chris.fin_shark.common.dto.job.JobStatusDTO;
+import com.chris.fin_shark.m06.converter.JobExecutionConverter;
 import com.chris.fin_shark.m06.service.JobManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ import java.time.LocalDate;
 public class JobManagementController {
 
     private final JobManagementService jobManagementService;
+    private final JobExecutionConverter jobExecutionConverter;
 
     /**
      * 分頁查詢 Job 執行記錄
@@ -98,30 +101,69 @@ public class JobManagementController {
         return ApiResponse.success(execution);
     }
 
-    /**
-     * 手動觸發財報同步 Job
-     *
-     * @return 執行結果
-     */
-    @PostMapping("/trigger/financial-sync")
-    public ApiResponse<JobExecutionDTO> triggerFinancialSync() {
-        log.info("POST /api/jobs/trigger/financial-sync");
 
-        JobExecutionDTO execution = jobManagementService.triggerFinancialSync();
-        return ApiResponse.success(execution);
+    /**
+     * 手動觸發法人買賣超同步
+     *
+     * @param tradeDate 交易日期
+     * @return Job 執行記錄
+     */
+    @PostMapping("/trigger/institutional-sync")
+    public ApiResponse<JobExecutionDTO> triggerInstitutionalSync(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate tradeDate) {
+
+        log.info("POST /api/jobs/trigger/institutional-sync?tradeDate={}", tradeDate);
+
+        JobExecution execution = jobManagementService.triggerInstitutionalSync(tradeDate);
+        return ApiResponse.success(jobExecutionConverter.toDTO(execution));
     }
 
     /**
-     * 手動觸發資料品質檢核 Job
+     * 手動觸發融資融券同步
      *
-     * @return 執行結果
+     * @param tradeDate 交易日期
+     * @return Job 執行記錄
      */
-    @PostMapping("/trigger/data-quality-check")
-    public ApiResponse<JobExecutionDTO> triggerDataQualityCheck() {
-        log.info("POST /api/jobs/trigger/data-quality-check");
+    @PostMapping("/trigger/margin-sync")
+    public ApiResponse<JobExecutionDTO> triggerMarginSync(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate tradeDate) {
 
-        JobExecutionDTO execution = jobManagementService.triggerDataQualityCheck();
-        return ApiResponse.success(execution);
+        log.info("POST /api/jobs/trigger/margin-sync?tradeDate={}", tradeDate);
+
+        JobExecution execution = jobManagementService.triggerMarginSync(tradeDate);
+        return ApiResponse.success(jobExecutionConverter.toDTO(execution));
+    }
+
+    /**
+     * 手動觸發財報同步
+     *
+     * @param year    年度
+     * @param quarter 季度
+     * @return Job 執行記錄
+     */
+    @PostMapping("/trigger/financial-sync")
+    public ApiResponse<JobExecutionDTO> triggerFinancialSync(
+            @RequestParam Integer year,
+            @RequestParam Short quarter) {
+
+        log.info("POST /api/jobs/trigger/financial-sync?year={}&quarter={}", year, quarter);
+
+        JobExecution execution = jobManagementService.triggerFinancialSync(year, quarter);
+        return ApiResponse.success(jobExecutionConverter.toDTO(execution));
+    }
+
+    /**
+     * 手動觸發資料品質檢核
+     *
+     * @return Job 執行記錄
+     */
+    @PostMapping("/trigger/quality-check")
+    public ApiResponse<JobExecutionDTO> triggerQualityCheck() {
+
+        log.info("POST /api/jobs/trigger/quality-check");
+
+        JobExecution execution = jobManagementService.triggerQualityCheck();
+        return ApiResponse.success(jobExecutionConverter.toDTO(execution));
     }
 
 

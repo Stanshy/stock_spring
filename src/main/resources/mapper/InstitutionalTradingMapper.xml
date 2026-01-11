@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m06.mapper.InstitutionalTradingMapper">
+
+    <!-- 批次插入法人買賣超資料（UPSERT） -->
+    <insert id="batchInsert">
+        INSERT INTO institutional_trading (
+            stock_id, trade_date,
+            foreign_buy, foreign_sell,
+            trust_buy, trust_sell,
+            dealer_buy, dealer_sell,
+            created_at, updated_at
+        ) VALUES
+        <foreach collection="tradingList" item="item" separator=",">
+        (
+            #{item.stockId},
+            #{item.tradeDate},
+            #{item.foreignBuy},
+            #{item.foreignSell},
+            #{item.trustBuy},
+            #{item.trustSell},
+            #{item.dealerBuy},
+            #{item.dealerSell},
+            NOW(),
+            NOW()
+        )
+        </foreach>
+        ON CONFLICT (stock_id, trade_date)
+        DO UPDATE SET
+            foreign_buy = EXCLUDED.foreign_buy,
+            foreign_sell = EXCLUDED.foreign_sell,
+            trust_buy = EXCLUDED.trust_buy,
+            trust_sell = EXCLUDED.trust_sell,
+            dealer_buy = EXCLUDED.dealer_buy,
+            dealer_sell = EXCLUDED.dealer_sell,
+            updated_at = NOW()
+    </insert>
+
+    <!-- 批次更新法人買賣超資料 -->
+    <update id="batchUpdate">
+        <foreach collection="tradingList" item="item" separator=";">
+            UPDATE institutional_trading SET
+                foreign_buy = #{item.foreignBuy},
+                foreign_sell = #{item.foreignSell},
+                trust_buy = #{item.trustBuy},
+                trust_sell = #{item.trustSell},
+                dealer_buy = #{item.dealerBuy},
+                dealer_sell = #{item.dealerSell},
+                updated_at = NOW()
+            WHERE stock_id = #{item.stockId}
+              AND trade_date = #{item.tradeDate}
+        </foreach>
+    </update>
+
+    <!-- 查詢法人連續買超天數 -->
+    <select id="getConsecutiveBuyDays" resultType="com.chris.fin_shark.m06.domain.InstitutionalTrading">
+        SELECT *
+        FROM institutional_trading
+        WHERE stock_id = #{stockId}
+        ORDER BY trade_date DESC
+        LIMIT #{days}
+    </select>
+
+    <!-- 查詢缺少的法人資料日期 -->
+    <select id="findMissingDates" resultType="java.time.LocalDate">
+        SELECT tc.calendar_date
+        FROM trading_calendar tc
+        LEFT JOIN institutional_trading it
+            ON tc.calendar_date = it.trade_date
+            AND it.stock_id = #{stockId}
+        WHERE tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND it.trading_id IS NULL
+        ORDER BY tc.calendar_date
+    </select>
+
+    <!-- 查詢法人買賣超排行 -->
+    <select id="getTopNetBuying" resultType="com.chris.fin_shark.m06.domain.InstitutionalTrading">
+        SELECT *
+        FROM institutional_trading
+        WHERE trade_date = #{tradeDate}
+        ORDER BY total_net DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

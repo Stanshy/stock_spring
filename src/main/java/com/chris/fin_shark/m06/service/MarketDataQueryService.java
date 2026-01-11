@@ -1,17 +1,24 @@
 package com.chris.fin_shark.m06.service;
 
+import com.chris.fin_shark.m06.converter.InstitutionalTradingConverter;
+import com.chris.fin_shark.m06.converter.MarginTradingConverter;
 import com.chris.fin_shark.m06.converter.StockPriceConverter;
+import com.chris.fin_shark.m06.domain.InstitutionalTrading;
+import com.chris.fin_shark.m06.domain.MarginTrading;
 import com.chris.fin_shark.m06.domain.StockPrice;
 import com.chris.fin_shark.m06.dto.InstitutionalTradingDTO;
 import com.chris.fin_shark.m06.dto.MarginTradingDTO;
 import com.chris.fin_shark.m06.dto.StockPriceDTO;
 import com.chris.fin_shark.m06.exception.StockNotFoundException;
 import com.chris.fin_shark.m06.mapper.StockPriceMapper;
+import com.chris.fin_shark.m06.repository.InstitutionalTradingRepository;
+import com.chris.fin_shark.m06.repository.MarginTradingRepository;
 import com.chris.fin_shark.m06.repository.StockPriceRepository;
 import com.chris.fin_shark.m06.repository.StockRepository;
 import com.chris.fin_shark.m06.vo.StockPriceStatisticsVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +44,10 @@ public class MarketDataQueryService {
     private final StockPriceRepository stockPriceRepository;
     private final StockPriceMapper stockPriceMapper;
     private final StockPriceConverter stockPriceConverter;
+    private final InstitutionalTradingRepository institutionalTradingRepository;
+    private final MarginTradingRepository marginTradingRepository;
+    private final InstitutionalTradingConverter institutionalTradingConverter;
+    private final MarginTradingConverter marginTradingConverter;
 
     /**
      * 查詢股票歷史股價
@@ -126,14 +137,20 @@ public class MarketDataQueryService {
      * @return 法人買賣超列表
      */
     @Transactional(readOnly = true)
-    public List<InstitutionalTradingDTO> queryInstitutionalTrading(String stockId,
-            LocalDate startDate,
-            LocalDate endDate,
-            Integer days) {
-        log.debug("查詢法人買賣: stockId={}", stockId);
+    public List<InstitutionalTradingDTO> queryInstitutionalTrading(
+            String stockId, LocalDate startDate, LocalDate endDate, Integer days) {
 
-        // TODO: 實作法人買賣查詢邏輯
-        return List.of();
+        List<InstitutionalTrading> data;
+
+        if (startDate != null && endDate != null) {
+            data = institutionalTradingRepository.findByStockIdAndDateRange(stockId, startDate, endDate);
+        } else {
+            data = institutionalTradingRepository
+                    .findByStockIdOrderByTradeDateDesc(stockId, PageRequest.of(0, days))
+                    .getContent();
+        }
+
+        return institutionalTradingConverter.toDTOList(data);
     }
 
     /**
@@ -146,13 +163,19 @@ public class MarketDataQueryService {
      * @return 融資融券列表
      */
     @Transactional(readOnly = true)
-    public List<MarginTradingDTO> queryMarginTrading(String stockId,
-            LocalDate startDate,
-            LocalDate endDate,
-            Integer days) {
-        log.debug("查詢融資融券: stockId={}", stockId);
+    public List<MarginTradingDTO> queryMarginTrading(
+            String stockId, LocalDate startDate, LocalDate endDate, Integer days) {
 
-        // TODO: 實作融資融券查詢邏輯
-        return List.of();
+        List<MarginTrading> data;
+
+        if (startDate != null && endDate != null) {
+            data = marginTradingRepository.findByStockIdAndDateRange(stockId, startDate, endDate);
+        } else {
+            data = marginTradingRepository
+                    .findByStockIdOrderByTradeDateDesc(stockId, PageRequest.of(0, days))
+                    .getContent();
+        }
+
+        return marginTradingConverter.toDTOList(data);
     }
 }

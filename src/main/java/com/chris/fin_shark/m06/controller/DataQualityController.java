@@ -5,7 +5,10 @@ import com.chris.fin_shark.common.dto.PageResponse;
 import com.chris.fin_shark.m06.dto.DataQualityCheckDTO;
 import com.chris.fin_shark.m06.dto.DataQualityIssueDTO;
 import com.chris.fin_shark.m06.dto.DataQualitySummaryDTO;
+import com.chris.fin_shark.m06.dto.QualityCheckResultDTO;
+import com.chris.fin_shark.m06.dto.request.QualityCheckExecuteRequest;
 import com.chris.fin_shark.m06.service.DataQualityService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -131,16 +134,16 @@ public class DataQualityController {
     /**
      * 手動觸發品質檢核
      *
-     * @param targetTable 目標表（可選，不指定則檢核所有表）
+     * @param request 檢核請求
      * @return 檢核結果
      */
     @PostMapping("/run-check")
-    public ApiResponse<String> runQualityCheck(
-            @RequestParam(required = false) String targetTable) {
+    public ApiResponse<QualityCheckResultDTO> runQualityCheck(
+            @Valid @RequestBody QualityCheckExecuteRequest request) {
 
-        log.info("POST /api/data-quality/run-check?targetTable={}", targetTable);
+        log.info("POST /api/data-quality/run-check: {}", request);
 
-        dataQualityService.runQualityCheck(targetTable);
-        return ApiResponse.success("Quality check triggered successfully");
+        QualityCheckResultDTO result = dataQualityService.runQualityCheck(request);
+        return ApiResponse.success(result);
     }
 }

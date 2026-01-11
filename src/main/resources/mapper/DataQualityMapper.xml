@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m06.mapper.DataQualityMapper">
+
+    <!-- 檢核股價資料完整性 -->
+    <select id="checkStockPriceCompleteness" resultType="com.chris.fin_shark.m06.vo.MissingDataVO">
+        SELECT
+            s.stock_id,
+            s.stock_name,
+            tc.calendar_date AS missing_date,
+            'stock_prices' AS table_name
+        FROM stocks s
+        CROSS JOIN trading_calendar tc
+        LEFT JOIN stock_prices sp
+            ON s.stock_id = sp.stock_id
+            AND tc.calendar_date = sp.trade_date
+        WHERE s.is_active = true
+          AND tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND sp.price_id IS NULL
+        ORDER BY s.stock_id, tc.calendar_date
+    </select>
+
+    <!-- 檢核法人資料完整性 -->
+    <select id="checkInstitutionalCompleteness" resultType="com.chris.fin_shark.m06.vo.MissingDataVO">
+        SELECT
+            s.stock_id,
+            s.stock_name,
+            tc.calendar_date AS missing_date,
+            'institutional_trading' AS table_name
+        FROM stocks s
+        CROSS JOIN trading_calendar tc
+        LEFT JOIN institutional_trading it
+            ON s.stock_id = it.stock_id
+            AND tc.calendar_date = it.trade_date
+        WHERE s.is_active = true
+          AND tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND it.trading_id IS NULL
+        ORDER BY s.stock_id, tc.calendar_date
+    </select>
+
+    <!-- 檢核融資融券資料完整性 -->
+    <select id="checkMarginCompleteness" resultType="com.chris.fin_shark.m06.vo.MissingDataVO">
+        SELECT
+            s.stock_id,
+            s.stock_name,
+            tc.calendar_date AS missing_date,
+            'margin_trading' AS table_name
+        FROM stocks s
+        CROSS JOIN trading_calendar tc
+        LEFT JOIN margin_trading mt
+            ON s.stock_id = mt.stock_id
+            AND tc.calendar_date = mt.trade_date
+        WHERE s.is_active = true
+          AND tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND mt.margin_id IS NULL
+        ORDER BY s.stock_id, tc.calendar_date
+    </select>
+
+    <!-- 檢核股價四價關係 -->
+    <select id="checkPriceRelationship" resultType="com.chris.fin_shark.m06.vo.QualityCheckExecutionVO">
+        SELECT
+            stock_id,
+            trade_date,
+            'PRICE_RELATIONSHIP' AS check_type,
+            'low_price > open_price OR low_price > close_price OR high_price &lt; open_price OR high_price &lt; close_price' AS issue_detail,
+            CONCAT('open=', open_price, ', high=', high_price, ', low=', low_price, ', close=', close_price) AS actual_value
+        FROM stock_prices
+        WHERE trade_date BETWEEN #{startDate} AND #{endDate}
+          AND (
+              low_price > open_price
+              OR low_price > close_price
+              OR high_price &lt; open_price
+              OR high_price &lt; close_price
+          )
+        ORDER BY trade_date DESC, stock_id
+    </select>
+
+    <!-- 檢核資料時效性 -->
+    <select id="checkDataTimeliness" resultType="com.chris.fin_shark.m06.vo.QualityCheckExecutionVO">
+        SELECT
+            #{tableName} AS table_name,
+            'TIMELINESS' AS check_type,
+            MAX(
+                CASE #{tableName}
+                    WHEN 'stock_prices' THEN (SELECT MAX(trade_date) FROM stock_prices)
+                    WHEN 'institutional_trading' THEN (SELECT MAX(trade_date) FROM institutional_trading)
+                    WHEN 'margin_trading' THEN (SELECT MAX(trade_date) FROM margin_trading)
+                END
+            )::text AS actual_value,
+            (SELECT MAX(calendar_date) FROM trading_calendar WHERE is_trading_day = true AND calendar_date &lt;= CURRENT_DATE)::text AS expected_value
+    </select>
+
+    <!-- 統計各資料表的資料筆數 -->
+    <select id="getDataStatistics" resultType="com.chris.fin_shark.m06.vo.QualityCheckExecutionVO">
+        SELECT 'stocks' AS table_name, 'ROW_COUNT' AS check_type, COUNT(*)::text AS actual_value FROM stocks
+        UNION ALL
+        SELECT 'stock_prices' AS table_name, 'ROW_COUNT' AS check_type, COUNT(*)::text AS actual_value FROM stock_prices
+        UNION ALL
+        SELECT 'institutional_trading' AS table_name, 'ROW_COUNT' AS check_type, COUNT(*)::text AS actual_value FROM institutional_trading
+        UNION ALL
+        SELECT 'margin_trading' AS table_name, 'ROW_COUNT' AS check_type, COUNT(*)::text AS actual_value FROM margin_trading
+        UNION ALL
+        SELECT 'financial_statements' AS table_name, 'ROW_COUNT' AS check_type, COUNT(*)::text AS actual_value FROM financial_statements
+    </select>
+
+</mapper>

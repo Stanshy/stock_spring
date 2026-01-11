@@ -2,8 +2,8 @@
 
 > **文件編號**: API-M06
 > **模組名稱**: 資料管理模組
-> **版本**: v2.1
-> **最後更新**: 2026-01-01
+> **版本**: v3.0
+> **最後更新**: 2026-01-10
 > **狀態**: Draft
 
 ---
@@ -64,6 +64,38 @@
 | GET /api/data-quality/summary | GET | 查詢資料品質統計摘要 | F-M06-006 | 統計物件 |
 | POST /api/data-quality/run-check | POST | 手動觸發品質檢核 | F-M06-006 | 字串訊息 |
 
+#### 法人買賣超 API (InstitutionalTradingController) [P1]
+
+| API 端點 | HTTP Method | 說明 | 功能編號 | 回應格式 |
+|---------|-------------|------|---------|---------|
+| GET /api/institutional/{stockId} | GET | 查詢法人買賣超 | F-M06-007 | 列表 |
+| GET /api/institutional/{stockId}/latest | GET | 查詢最新法人買賣超 | F-M06-007 | 單一物件 |
+| GET /api/institutional/{stockId}/summary | GET | 查詢法人買賣超統計 | F-M06-007 | 統計物件 |
+
+#### 融資融券 API (MarginTradingController) [P1]
+
+| API 端點 | HTTP Method | 說明 | 功能編號 | 回應格式 |
+|---------|-------------|------|---------|---------|
+| GET /api/margin/{stockId} | GET | 查詢融資融券 | F-M06-007 | 列表 |
+| GET /api/margin/{stockId}/latest | GET | 查詢最新融資融券 | F-M06-007 | 單一物件 |
+| GET /api/margin/{stockId}/summary | GET | 查詢融資融券統計 | F-M06-007 | 統計物件 |
+
+#### 財報 API (FinancialStatementController) [P1]
+
+| API 端點 | HTTP Method | 說明 | 功能編號 | 回應格式 |
+|---------|-------------|------|---------|---------|
+| GET /api/financials/{stockId} | GET | 查詢財務報表 | F-M06-007 | 列表 |
+| GET /api/financials/{stockId}/latest | GET | 查詢最新財務報表 | F-M06-007 | 單一物件 |
+| GET /api/financials/{stockId}/compare | GET | 比較不同期間財報 | F-M06-007 | 比較物件 |
+
+#### 資料補齊 API (DataRepairController) [P1]
+
+| API 端點 | HTTP Method | 說明 | 功能編號 | 回應格式 |
+|---------|-------------|------|---------|---------|
+| POST /api/data-repair/execute | POST | 執行資料補齊 | F-M06-009 | 補齊結果 |
+| GET /api/data-repair/missing | GET | 查詢缺失資料 | F-M06-009 | 缺失資料列表 |
+| GET /api/data-repair/history | GET | 查詢補齊歷史 | F-M06-009 | 分頁列表 |
+
 #### Job 管理 API (JobManagementController)
 
 | API 端點 | HTTP Method | 說明 | 功能編號 | 回應格式 |
@@ -72,8 +104,10 @@
 | GET /api/jobs/executions/{executionId} | GET | 查詢單一 Job 執行詳情 | F-M06-008 | 單一物件 |
 | GET /api/jobs/status | GET | 查詢 Job 狀態總覽 | F-M06-008 | 統計物件 |
 | POST /api/jobs/trigger/stock-price-sync | POST | 手動觸發股價同步 Job | F-M06-008 | Job 執行資訊 |
-| POST /api/jobs/trigger/financial-sync | POST | 手動觸發財報同步 Job | F-M06-008 | Job 執行資訊 |
-| POST /api/jobs/trigger/data-quality-check | POST | 手動觸發資料品質檢核 Job | F-M06-008 | Job 執行資訊 |
+| POST /api/jobs/trigger/institutional-sync | POST | 手動觸發法人買賣超同步 Job [P1] | F-M06-008 | Job 執行資訊 |
+| POST /api/jobs/trigger/margin-sync | POST | 手動觸發融資融券同步 Job [P1] | F-M06-008 | Job 執行資訊 |
+| POST /api/jobs/trigger/financial-sync | POST | 手動觸發財報同步 Job [P1] | F-M06-008 | Job 執行資訊 |
+| POST /api/jobs/trigger/quality-check | POST | 手動觸發資料品質檢核 Job [P1] | F-M06-008 | Job 執行資訊 |
 
 ---
 
@@ -1283,12 +1317,418 @@ POST /api/jobs/trigger/financial-sync
 
 ---
 
-#### API-M06-030: 手動觸發資料品質檢核 Job
+#### API-M06-030: 手動觸發資料品質檢核 Job (已棄用)
+
+> **注意**: 此端點已棄用，請使用 API-M06-046 (`POST /api/jobs/trigger/quality-check`)
+
+---
+
+## 法人買賣超 API [P1]
+
+#### API-M06-031: 查詢法人買賣超
 
 **Request**:
 ```
-POST /api/jobs/trigger/data-quality-check
+GET /api/institutional/2330?startDate=2026-01-01&endDate=2026-01-11&days=30
 ```
+
+**Path Parameters**:
+| 參數 | 類型 | 說明 |
+|-----|------|------|
+| stockId | String | 股票代碼 |
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| startDate | Date | N | 開始日期（yyyy-MM-dd） | - |
+| endDate | Date | N | 結束日期（yyyy-MM-dd） | - |
+| days | Integer | N | 查詢天數（與日期範圍擇一） | 30 |
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": [
+        {
+            "trading_id": 33,
+            "stock_id": "2330",
+            "trade_date": "2026-01-05",
+            "foreign_buy": 31108877,
+            "foreign_sell": 36652231,
+            "foreign_net": -5543354,
+            "trust_buy": 0,
+            "trust_sell": 0,
+            "trust_net": 0,
+            "dealer_buy": 3508000,
+            "dealer_sell": 71362,
+            "dealer_net": 3436638,
+            "total_net": -2106716
+        },
+        {
+            "trading_id": 16,
+            "stock_id": "2330",
+            "trade_date": "2026-01-02",
+            "foreign_buy": 14449737,
+            "foreign_sell": 18848494,
+            "foreign_net": -4398757,
+            "trust_buy": 0,
+            "trust_sell": 0,
+            "trust_net": 0,
+            "dealer_buy": 792459,
+            "dealer_sell": 80024,
+            "dealer_net": 712435,
+            "total_net": -3686322
+        }
+    ],
+    "timestamp": "2026-01-11T14:38:10.1521692+08:00"
+}
+```
+
+---
+
+#### API-M06-032: 查詢最新法人買賣超
+
+**Request**:
+```
+GET /api/institutional/2330/latest
+```
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+        "trading_id": 33,
+        "stock_id": "2330",
+        "trade_date": "2026-01-05",
+        "foreign_buy": 31108877,
+        "foreign_sell": 36652231,
+        "foreign_net": -5543354,
+        "trust_buy": 0,
+        "trust_sell": 0,
+        "trust_net": 0,
+        "dealer_buy": 3508000,
+        "dealer_sell": 71362,
+        "dealer_net": 3436638,
+        "total_net": -2106716
+    },
+    "timestamp": "2026-01-11T14:38:46.3826481+08:00"
+}
+```
+
+---
+
+#### API-M06-033: 查詢指定日期的全市場法人買賣超
+
+**Request**:
+```
+GET /api/institutional/market/{date}
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| date | Date | N | （yyyy-MM-dd） | - |
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": [
+        {
+            "trading_id": 2,
+            "stock_id": "2408",
+            "trade_date": "2026-01-02",
+            "foreign_buy": 44264125,
+            "foreign_sell": 25335283,
+            "foreign_net": 18928842,
+            "trust_buy": 0,
+            "trust_sell": 0,
+            "trust_net": 0,
+            "dealer_buy": 3692249,
+            "dealer_sell": 1530000,
+            "dealer_net": 2162249,
+            "total_net": 21091091
+        },
+        {
+            "trading_id": 3,
+            "stock_id": "2884",
+            "trade_date": "2026-01-02",
+            "foreign_buy": 5932748,
+            "foreign_sell": 30024075,
+            "foreign_net": -24091327,
+            "trust_buy": 0,
+            "trust_sell": 0,
+            "trust_net": 0,
+            "dealer_buy": 41451401,
+            "dealer_sell": 1567000,
+            "dealer_net": 39884401,
+            "total_net": 15793074
+       }
+    ],
+    "timestamp": "2026-01-11T14:40:22.3470122+08:00"
+}
+```
+
+---
+
+## 融資融券 API [P1]
+
+#### API-M06-034: 查詢融資融券
+
+**Request**:
+```
+GET /api/margin/2330?startDate=2026-01-01&endDate=2026-01-11&days=30
+```
+
+**Path Parameters**:
+| 參數 | 類型 | 說明 |
+|-----|------|------|
+| stockId | String | 股票代碼 |
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| startDate | Date | N | 開始日期（yyyy-MM-dd） | - |
+| endDate | Date | N | 結束日期（yyyy-MM-dd） | - |
+| days | Integer | N | 查詢天數（與日期範圍擇一） | 30 |
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": [
+        {
+            "margin_id": 26,
+            "stock_id": "2330",
+            "trade_date": "2026-01-05",
+            "margin_purchase": 2337,
+            "margin_sell": 1772,
+            "margin_balance": 23276,
+            "margin_quota": 6483131,
+            "margin_usage_rate": 0.36,
+            "short_purchase": 29,
+            "short_sell": 91,
+            "short_balance": 311,
+            "short_quota": 6483131,
+            "short_usage_rate": 0.00
+        },
+        {
+            "margin_id": 6,
+            "stock_id": "2330",
+            "trade_date": "2026-01-02",
+            "margin_purchase": 1680,
+            "margin_sell": 706,
+            "margin_balance": 22720,
+            "margin_quota": 6483131,
+            "margin_usage_rate": 0.35,
+            "short_purchase": 2,
+            "short_sell": 85,
+            "short_balance": 249,
+            "short_quota": 6483131,
+            "short_usage_rate": 0.00
+        }
+    ],
+    "timestamp": "2026-01-11T14:43:04.4394553+08:00"
+}
+```
+
+---
+
+#### API-M06-035: 查詢最新融資融券
+
+**Request**:
+```
+GET /api/margin/2330/latest
+```
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+        "margin_id": 26,
+        "stock_id": "2330",
+        "trade_date": "2026-01-05",
+        "margin_purchase": 2337,
+        "margin_sell": 1772,
+        "margin_balance": 23276,
+        "margin_quota": 6483131,
+        "margin_usage_rate": 0.36,
+        "short_purchase": 29,
+        "short_sell": 91,
+        "short_balance": 311,
+        "short_quota": 6483131,
+        "short_usage_rate": 0.00
+    },
+    "timestamp": "2026-01-11T14:43:45.1058608+08:00"
+}
+```
+
+---
+
+#### API-M06-036: 查詢融資融券統計
+
+**Request**:
+```
+GET /api/margin/market/{date}
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| date | Date | N | （yyyy-MM-dd） | - |
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": [
+        {
+            "margin_id": 1,
+            "stock_id": "1301",
+            "trade_date": "2026-01-02",
+            "margin_purchase": 1205,
+            "margin_sell": 357,
+            "margin_balance": 25710,
+            "margin_quota": 1591435,
+            "margin_usage_rate": 1.62,
+            "short_purchase": 22,
+            "short_sell": 7,
+            "short_balance": 636,
+            "short_quota": 1591435,
+            "short_usage_rate": 0.04
+        },
+        {
+            "margin_id": 2,
+            "stock_id": "1303",
+            "trade_date": "2026-01-02",
+            "margin_purchase": 8380,
+            "margin_sell": 10604,
+            "margin_balance": 51883,
+            "margin_quota": 1982705,
+            "margin_usage_rate": 2.62,
+            "short_purchase": 3151,
+            "short_sell": 264,
+            "short_balance": 2948,
+            "short_quota": 1982705,
+            "short_usage_rate": 0.15
+        }
+    ],
+    "timestamp": "2026-01-11T14:44:51.5192144+08:00"
+}
+```
+
+---
+
+## 財報 API [P1]
+
+#### API-M06-037: 查詢財務報表
+
+**Request**:
+```
+GET /api/financials/2330?year=2024&quarter=3
+```
+
+**Path Parameters**:
+| 參數 | 類型 | 說明 |
+|-----|------|------|
+| stockId | String | 股票代碼 |
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| year | Integer | N | 年度 | 最近年度 |
+| quarter | Short | N | 季度（1-4） | 最近季度 |
+| periods | Integer | N | 查詢期數 | 4 |
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": [
+        {
+            "year": 2024,
+            "quarter": 3,
+            "revenue": 759692143000.00,
+            "source": "FinMind",
+            "statement_id": 1,
+            "stock_id": "2330",
+            "report_type": "Q",
+            "operating_income": 360766289000.00,
+            "net_income": 325080170000.00,
+            "gross_profit": 439345666000.00,
+            "operating_expense": 79078904000.00,
+            "income_statement": {},
+            "balance_sheet": {},
+            "cash_flow_statement": {},
+            "financial_ratios": {},
+            "publish_date": "2024-09-30"
+        }
+    ],
+    "timestamp": "2026-01-11T14:45:42.9158322+08:00"
+}
+```
+
+---
+
+#### API-M06-038: 查詢最新財務報表
+
+**Request**:
+```
+GET /api/financials/2330/latest
+```
+
+**Response** (成功):
+```json
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+        "year": 2024,
+        "quarter": 3,
+        "revenue": 759692143000.00,
+        "source": "FinMind",
+        "statement_id": 1,
+        "stock_id": "2330",
+        "report_type": "Q",
+        "operating_income": 360766289000.00,
+        "net_income": 325080170000.00,
+        "gross_profit": 439345666000.00,
+        "operating_expense": 79078904000.00,
+        "income_statement": {},
+        "balance_sheet": {},
+        "cash_flow_statement": {},
+        "financial_ratios": {},
+        "publish_date": "2024-09-30"
+    },
+    "timestamp": "2026-01-11T14:46:17.0918358+08:00"
+}
+```
+
+---
+
+#### API-M06-039: 比較不同期間財報
+
+**Request**:
+```
+GET /api/financials/2330/compare?year1=2024&quarter1=3&year2=2023&quarter2=3
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 |
+|-----|------|------|------|
+| year1 | Integer | Y | 比較年度 1 |
+| quarter1 | Short | Y | 比較季度 1 |
+| year2 | Integer | Y | 比較年度 2 |
+| quarter2 | Short | Y | 比較季度 2 |
 
 **Response** (成功):
 ```json
@@ -1296,9 +1736,203 @@ POST /api/jobs/trigger/data-quality-check
   "code": 200,
   "message": "Success",
   "data": {
-    "execution_id": 12346,
-    "job_name": "SYNC_STOCK_PRICES",
-    "job_type": "MANUAL",
+    "stock_id": "2330",
+    "period1": "2024Q3",
+    "period2": "2023Q3",
+    "revenue_change": 15.50,
+    "revenue_change_pct": 8.25,
+    "net_income_change": 45000000000,
+    "net_income_change_pct": 16.05,
+    "eps_change": 1.73,
+    "eps_change_pct": 16.00,
+    "roe_change": 2.50,
+    "gross_margin_change": 2.00,
+    "operating_margin_change": 1.80
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+## 資料補齊 API [P1]
+
+#### API-M06-040: 執行資料補齊
+
+**Request**:
+```
+POST /api/data-repair/execute
+Content-Type: application/json
+
+{
+  "data_type": "STOCK_PRICE",
+  "stock_ids": ["2330", "2317"],
+  "start_date": "2024-12-01",
+  "end_date": "2024-12-31",
+  "strategy": "FETCH_FROM_SOURCE"
+}
+```
+
+**Request Body**:
+| 欄位 | 類型 | 必填 | 說明 |
+|-----|------|------|------|
+| data_type | String | Y | 資料類型（STOCK_PRICE/INSTITUTIONAL/MARGIN/FINANCIAL） |
+| stock_ids | List<String> | N | 股票代碼列表（空則處理所有股票） |
+| start_date | Date | Y | 開始日期 |
+| end_date | Date | Y | 結束日期 |
+| strategy | String | N | 補齊策略（FETCH_FROM_SOURCE/INTERPOLATE/COPY_PREVIOUS） |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": "repair_20260101_001",
+    "data_type": "STOCK_PRICE",
+    "total_missing": 15,
+    "repaired_count": 14,
+    "failed_count": 1,
+    "status": "PARTIAL_SUCCESS",
+    "start_time": "2026-01-01 10:30:00",
+    "end_time": "2026-01-01 10:35:00",
+    "duration_ms": 300000,
+    "details": [
+      {
+        "stock_id": "2330",
+        "missing_dates": ["2024-12-25"],
+        "repaired_dates": ["2024-12-25"],
+        "failed_dates": []
+      },
+      {
+        "stock_id": "2317",
+        "missing_dates": ["2024-12-25", "2024-12-26"],
+        "repaired_dates": ["2024-12-25"],
+        "failed_dates": ["2024-12-26"]
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T10:35:00+08:00"
+}
+```
+
+---
+
+#### API-M06-041: 查詢缺失資料
+
+**Request**:
+```
+GET /api/data-repair/missing?dataType=STOCK_PRICE&stockId=2330&startDate=2024-12-01&endDate=2024-12-31
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 |
+|-----|------|------|------|
+| dataType | String | Y | 資料類型 |
+| stockId | String | N | 股票代碼（空則查詢所有股票） |
+| startDate | Date | Y | 開始日期 |
+| endDate | Date | Y | 結束日期 |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "data_type": "STOCK_PRICE",
+    "total_missing": 5,
+    "missing_details": [
+      {
+        "stock_id": "2330",
+        "missing_dates": ["2024-12-25", "2024-12-26"],
+        "missing_count": 2
+      },
+      {
+        "stock_id": "2317",
+        "missing_dates": ["2024-12-25", "2024-12-26", "2024-12-27"],
+        "missing_count": 3
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+#### API-M06-042: 查詢補齊歷史
+
+**Request**:
+```
+GET /api/data-repair/history?dataType=STOCK_PRICE&status=SUCCESS&page=1&size=20
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| dataType | String | N | 資料類型 | - |
+| status | String | N | 狀態（SUCCESS/PARTIAL_SUCCESS/FAILED） | - |
+| page | Integer | N | 頁碼 | 1 |
+| size | Integer | N | 每頁筆數 | 20 |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "items": [
+      {
+        "execution_id": "repair_20260101_001",
+        "data_type": "STOCK_PRICE",
+        "total_missing": 15,
+        "repaired_count": 14,
+        "failed_count": 1,
+        "status": "PARTIAL_SUCCESS",
+        "start_time": "2026-01-01 10:30:00",
+        "end_time": "2026-01-01 10:35:00",
+        "duration_ms": 300000,
+        "triggered_by": "chris"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 20,
+      "total_items": 10,
+      "total_pages": 1,
+      "has_next": false,
+      "has_prev": false
+    }
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+## Job 管理 API（P1 擴充）
+
+#### API-M06-043: 手動觸發法人買賣超同步 Job [P1]
+
+**Request**:
+```
+POST /api/jobs/trigger/institutional-sync?tradeDate=2026-01-01
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| tradeDate | Date | N | 交易日期（yyyy-MM-dd） | 今天 |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": 12350,
+    "job_name": "InstitutionalTradingSync",
+    "job_type": "DATA_SYNC",
     "job_status": "RUNNING",
     "parameters": {
       "trade_date": "2026-01-01"
@@ -1318,7 +1952,194 @@ POST /api/jobs/trigger/data-quality-check
   },
   "timestamp": "2026-01-01T10:30:00+08:00"
 }
+```
 
+---
+
+#### API-M06-044: 手動觸發融資融券同步 Job [P1]
+
+**Request**:
+```
+POST /api/jobs/trigger/margin-sync?tradeDate=2026-01-01
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| tradeDate | Date | N | 交易日期（yyyy-MM-dd） | 今天 |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": 12351,
+    "job_name": "MarginTradingSync",
+    "job_type": "DATA_SYNC",
+    "job_status": "RUNNING",
+    "parameters": {
+      "trade_date": "2026-01-01"
+    },
+    "start_time": "2026-01-01 10:30:00",
+    "end_time": null,
+    "duration_ms": null,
+    "total_items": null,
+    "processed_items": 0,
+    "success_items": 0,
+    "failed_items": 0,
+    "error_message": null,
+    "retry_count": 0,
+    "trigger_type": "MANUAL",
+    "triggered_by": "chris",
+    "created_at": "2026-01-01 10:30:00"
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+#### API-M06-045: 手動觸發財報同步 Job [P1]
+
+**Request**:
+```
+POST /api/jobs/trigger/financial-sync?year=2024&quarter=3
+```
+
+**Query Parameters**:
+| 參數 | 類型 | 必填 | 說明 | 預設值 |
+|-----|------|------|------|-------|
+| year | Integer | Y | 年度 | - |
+| quarter | Short | Y | 季度（1-4） | - |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": 12352,
+    "job_name": "FinancialStatementSync",
+    "job_type": "DATA_SYNC",
+    "job_status": "RUNNING",
+    "parameters": {
+      "year": 2024,
+      "quarter": 3
+    },
+    "start_time": "2026-01-01 10:30:00",
+    "end_time": null,
+    "duration_ms": null,
+    "total_items": null,
+    "processed_items": 0,
+    "success_items": 0,
+    "failed_items": 0,
+    "error_message": null,
+    "retry_count": 0,
+    "trigger_type": "MANUAL",
+    "triggered_by": "chris",
+    "created_at": "2026-01-01 10:30:00"
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+#### API-M06-046: 手動觸發資料品質檢核 Job [P1]
+
+**Request**:
+```
+POST /api/jobs/trigger/quality-check
+```
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": 12353,
+    "job_name": "DataQualityCheck",
+    "job_type": "DATA_QUALITY",
+    "job_status": "RUNNING",
+    "parameters": {},
+    "start_time": "2026-01-01 10:30:00",
+    "end_time": null,
+    "duration_ms": null,
+    "total_items": null,
+    "processed_items": 0,
+    "success_items": 0,
+    "failed_items": 0,
+    "error_message": null,
+    "retry_count": 0,
+    "trigger_type": "MANUAL",
+    "triggered_by": "chris",
+    "created_at": "2026-01-01 10:30:00"
+  },
+  "timestamp": "2026-01-01T10:30:00+08:00"
+}
+```
+
+---
+
+#### API-M06-047: 執行品質檢核（進階版）[P1]
+
+**Request**:
+```
+POST /api/data-quality/run-check
+Content-Type: application/json
+
+{
+  "check_type": "COMPLETENESS",
+  "target_tables": ["stock_prices", "institutional_trading"],
+  "start_date": "2024-12-01",
+  "end_date": "2024-12-31"
+}
+```
+
+**Request Body**:
+| 欄位 | 類型 | 必填 | 說明 |
+|-----|------|------|------|
+| check_type | String | N | 檢核類型（COMPLETENESS/CONSISTENCY/ACCURACY/ALL） |
+| target_tables | List<String> | N | 目標表列表（空則檢核所有表） |
+| start_date | Date | N | 開始日期 |
+| end_date | Date | N | 結束日期 |
+
+**Response** (成功):
+```json
+{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "execution_id": "qc_20260101_001",
+    "check_type": "COMPLETENESS",
+    "total_checks": 12,
+    "passed_checks": 10,
+    "failed_checks": 2,
+    "new_issues_found": 3,
+    "status": "COMPLETED",
+    "start_time": "2026-01-01 10:30:00",
+    "end_time": "2026-01-01 10:32:00",
+    "duration_ms": 120000,
+    "details": [
+      {
+        "table_name": "stock_prices",
+        "check_name": "股價資料完整性",
+        "status": "PASSED",
+        "affected_rows": 0
+      },
+      {
+        "table_name": "institutional_trading",
+        "check_name": "法人資料完整性",
+        "status": "FAILED",
+        "affected_rows": 5,
+        "issue_detail": "發現 5 筆缺失資料"
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T10:32:00+08:00"
+}
 ```
 
 ---
@@ -1338,6 +2159,26 @@ POST /api/jobs/trigger/data-quality-check
 | M06_DB_001 | 500 | 資料庫錯誤 | 聯絡系統管理員 |
 | M06_DQ_001 | 422 | 資料品質問題 | 查看問題詳情並修正 |
 
+#### P1 新增錯誤碼
+
+| 錯誤碼 | HTTP Status | 說明 | 處理建議 |
+|-------|------------|------|---------|
+| M06034 | 500 | 財報資料解析失敗 | 檢查資料格式或聯絡系統管理員 |
+| M06035 | 400 | 無效的財報期間 | 確認年度與季度參數正確 |
+| M06036 | 422 | 財報資料不完整 | 補齊缺失的必要欄位 |
+| M06043 | 500 | 法人資料同步失敗 | 稍後重試或檢查資料源 |
+| M06044 | 500 | 法人資料解析失敗 | 檢查資料格式 |
+| M06053 | 500 | 融資融券資料同步失敗 | 稍後重試或檢查資料源 |
+| M06054 | 500 | 融資融券資料解析失敗 | 檢查資料格式 |
+| M06084 | 500 | 品質檢核執行失敗 | 檢查檢核規則配置 |
+| M06085 | 400 | 無效的品質檢核規則 | 確認規則參數正確 |
+| M06086 | 504 | 品質檢核執行逾時 | 減少檢核範圍或稍後重試 |
+| M06101 | 400 | 無效的補齊日期範圍 | 確認開始與結束日期 |
+| M06102 | 400 | 無效的補齊策略 | 使用支援的策略類型 |
+| M06103 | 500 | 資料補齊執行失敗 | 檢查資料源或聯絡管理員 |
+| M06104 | 200 | 沒有需要補齊的資料 | 資料已完整，無需處理 |
+| M06105 | 207 | 部分資料補齊成功 | 檢查失敗項目並重試 |
+
 ---
 
 ## 📚 相關文檔
@@ -1351,5 +2192,5 @@ POST /api/jobs/trigger/data-quality-check
 
 **文件維護者**: API 設計師
 **審核者**: 架構師
-**最後更新**: 2026-01-01
-**下次審核**: 2026-02-01
+**最後更新**: 2026-01-10
+**下次審核**: 2026-02-10

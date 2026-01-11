@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m06.mapper.MarginTradingMapper">
+
+    <!-- 批次插入融資融券資料（UPSERT） -->
+    <insert id="batchInsert">
+        INSERT INTO margin_trading (
+            stock_id, trade_date,
+            margin_purchase, margin_sell, margin_balance, margin_quota,
+            short_purchase, short_sell, short_balance, short_quota,
+            created_at, updated_at
+        ) VALUES
+        <foreach collection="marginList" item="item" separator=",">
+        (
+            #{item.stockId},
+            #{item.tradeDate},
+            #{item.marginPurchase},
+            #{item.marginSell},
+            #{item.marginBalance},
+            #{item.marginQuota},
+            #{item.shortPurchase},
+            #{item.shortSell},
+            #{item.shortBalance},
+            #{item.shortQuota},
+            NOW(),
+            NOW()
+        )
+        </foreach>
+        ON CONFLICT (stock_id, trade_date)
+        DO UPDATE SET
+            margin_purchase = EXCLUDED.margin_purchase,
+            margin_sell = EXCLUDED.margin_sell,
+            margin_balance = EXCLUDED.margin_balance,
+            margin_quota = EXCLUDED.margin_quota,
+            short_purchase = EXCLUDED.short_purchase,
+            short_sell = EXCLUDED.short_sell,
+            short_balance = EXCLUDED.short_balance,
+            short_quota = EXCLUDED.short_quota,
+            updated_at = NOW()
+    </insert>
+
+    <!-- 批次更新融資融券資料 -->
+    <update id="batchUpdate">
+        <foreach collection="marginList" item="item" separator=";">
+            UPDATE margin_trading SET
+                margin_purchase = #{item.marginPurchase},
+                margin_sell = #{item.marginSell},
+                margin_balance = #{item.marginBalance},
+                margin_quota = #{item.marginQuota},
+                short_purchase = #{item.shortPurchase},
+                short_sell = #{item.shortSell},
+                short_balance = #{item.shortBalance},
+                short_quota = #{item.shortQuota},
+                updated_at = NOW()
+            WHERE stock_id = #{item.stockId}
+              AND trade_date = #{item.tradeDate}
+        </foreach>
+    </update>
+
+    <!-- 查詢融資增減趨勢 -->
+    <select id="getMarginTrend" resultType="com.chris.fin_shark.m06.domain.MarginTrading">
+        SELECT *
+        FROM margin_trading
+        WHERE stock_id = #{stockId}
+        ORDER BY trade_date DESC
+        LIMIT #{days}
+    </select>
+
+    <!-- 查詢缺少的融資融券資料日期 -->
+    <select id="findMissingDates" resultType="java.time.LocalDate">
+        SELECT tc.calendar_date
+        FROM trading_calendar tc
+        LEFT JOIN margin_trading mt
+            ON tc.calendar_date = mt.trade_date
+            AND mt.stock_id = #{stockId}
+        WHERE tc.is_trading_day = true
+          AND tc.calendar_date BETWEEN #{startDate} AND #{endDate}
+          AND mt.margin_id IS NULL
+        ORDER BY tc.calendar_date
+    </select>
+
+    <!-- 查詢券資比排行 -->
+    <select id="getTopShortRatio" resultType="com.chris.fin_shark.m06.domain.MarginTrading">
+        SELECT *
+        FROM margin_trading
+        WHERE trade_date = #{tradeDate}
+          AND margin_balance > 0
+        ORDER BY (short_balance::numeric / margin_balance::numeric) DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

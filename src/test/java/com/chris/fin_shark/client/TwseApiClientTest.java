@@ -1,5 +1,6 @@
 package com.chris.fin_shark.client;
 
+import com.chris.fin_shark.client.twse.TwseApiClient;
 import com.chris.fin_shark.common.dto.external.TwseStockPriceData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TwseApiClientTest {
 
     @Autowired
-    private com.chris.fin_shark.client.TwseApiClient twseApiClient;
+    private TwseApiClient twseApiClient;
 
     @Test
     void testGetStockMonthlyPrices() {

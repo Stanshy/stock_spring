@@ -79,6 +79,21 @@ public enum M06ErrorCode implements IErrorCode {
      */
     M06_BALANCE_SHEET_NOT_BALANCED("M06033", 422, "Balance sheet equation not satisfied"),
 
+    /**
+     * 財報資料解析失敗
+     */
+    M06_FINANCIAL_PARSE_ERROR("M06034", 500, "Financial statement parse error"),
+
+    /**
+     * 無效的財報期間
+     */
+    M06_FINANCIAL_PERIOD_INVALID("M06035", 400, "Invalid financial period"),
+
+    /**
+     * 財報資料不完整
+     */
+    M06_FINANCIAL_DATA_INCOMPLETE("M06036", 422, "Financial data incomplete"),
+
     // ========== 三大法人相關 M0604x ==========
 
     /**
@@ -91,6 +106,16 @@ public enum M06ErrorCode implements IErrorCode {
      */
     M06_INVALID_TRADING_DATA("M06042", 422, "Invalid trading data"),
 
+    /**
+     * 法人資料同步失敗
+     */
+    M06_INSTITUTIONAL_SYNC_FAILED("M06043", 500, "Institutional trading sync failed"),
+
+    /**
+     * 法人資料解析失敗
+     */
+    M06_INSTITUTIONAL_PARSE_ERROR("M06044", 500, "Institutional trading parse error"),
+
     // ========== 融資融券相關 M0605x ==========
 
     /**
@@ -102,6 +127,17 @@ public enum M06ErrorCode implements IErrorCode {
      * 無效的融資融券資料
      */
     M06_INVALID_MARGIN_DATA("M06052", 422, "Invalid margin trading data"),
+
+    /**
+     * 融資融券資料同步失敗
+     */
+    M06_MARGIN_SYNC_FAILED("M06053", 500, "Margin trading sync failed"),
+
+    /**
+     * 融資融券資料解析失敗
+     */
+    M06_MARGIN_PARSE_ERROR("M06054", 500, "Margin trading parse error"),
+
 
     // ========== 交易日曆相關 M0606x ==========
 
@@ -149,6 +185,21 @@ public enum M06ErrorCode implements IErrorCode {
      */
     M06_DUPLICATE_DATA("M06083", 409, "Duplicate data detected"),
 
+    /**
+     * 品質檢核執行失敗
+     */
+    M06_QUALITY_CHECK_EXECUTION_FAILED("M06084", 500, "Quality check execution failed"),
+
+    /**
+     * 無效的品質檢核規則
+     */
+    M06_QUALITY_RULE_INVALID("M06085", 400, "Invalid quality check rule"),
+
+    /**
+     * 品質檢核執行逾時
+     */
+    M06_QUALITY_CHECK_TIMEOUT("M06086", 504, "Quality check timeout"),
+
 
     /**
      * Job 執行記錄不存在
@@ -163,7 +214,34 @@ public enum M06ErrorCode implements IErrorCode {
     /**
      * Job 已在執行中
      */
-    M06_JOB_ALREADY_RUNNING("M06093", 409, "Job is already running");
+    M06_JOB_ALREADY_RUNNING("M06093", 409, "Job is already running"),
+
+    // ========== 資料補齊相關 M0610x（新範圍）==========
+
+    /**
+     * 無效的補齊日期範圍
+     */
+    M06_REPAIR_DATE_RANGE_INVALID("M06101", 400, "Invalid repair date range"),
+
+    /**
+     * 無效的補齊策略
+     */
+    M06_REPAIR_STRATEGY_INVALID("M06102", 400, "Invalid repair strategy"),
+
+    /**
+     * 資料補齊執行失敗
+     */
+    M06_REPAIR_EXECUTION_FAILED("M06103", 500, "Data repair execution failed"),
+
+    /**
+     * 沒有需要補齊的資料
+     */
+    M06_REPAIR_NO_MISSING_DATA("M06104", 200, "No missing data to repair"),
+
+    /**
+     * 部分資料補齊成功
+     */
+    M06_REPAIR_PARTIAL_SUCCESS("M06105", 207, "Partial data repair success");
 
 
     /**

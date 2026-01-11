@@ -1,6 +1,7 @@
 package com.chris.fin_shark.m06.service;
 
 import com.chris.fin_shark.common.dto.PageResponse;
+import com.chris.fin_shark.common.enums.TriggerType;
 import com.chris.fin_shark.m06.converter.DataQualityCheckConverter;
 import com.chris.fin_shark.m06.converter.DataQualityIssueConverter;
 import com.chris.fin_shark.m06.domain.DataQualityCheck;
@@ -8,6 +9,8 @@ import com.chris.fin_shark.m06.domain.DataQualityIssue;
 import com.chris.fin_shark.m06.dto.DataQualityCheckDTO;
 import com.chris.fin_shark.m06.dto.DataQualityIssueDTO;
 import com.chris.fin_shark.m06.dto.DataQualitySummaryDTO;
+import com.chris.fin_shark.m06.dto.QualityCheckResultDTO;
+import com.chris.fin_shark.m06.dto.request.QualityCheckExecuteRequest;
 import com.chris.fin_shark.m06.repository.DataQualityCheckRepository;
 import com.chris.fin_shark.m06.repository.DataQualityIssueRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,7 @@ public class DataQualityService {
     private final DataQualityIssueRepository issueRepository;
     private final DataQualityCheckConverter checkConverter;
     private final DataQualityIssueConverter issueConverter;
+    private final DataQualityExecutionService dataQualityExecutionService;
 
     /**
      * 查詢所有啟用的檢核規則
@@ -158,16 +162,11 @@ public class DataQualityService {
     /**
      * 手動觸發品質檢核
      *
-     * @param targetTable 目標表（可選）
+     * @param request 檢核請求
      */
     @Transactional
-    public void runQualityCheck(String targetTable) {
-        log.info("觸發品質檢核: targetTable={}", targetTable);
-
-        // TODO: 實作品質檢核邏輯
-        // 1. 取得檢核規則
-        // 2. 執行檢核
-        // 3. 記錄問題
+    public QualityCheckResultDTO runQualityCheck(QualityCheckExecuteRequest request) {
+        return dataQualityExecutionService.executeQualityCheck(request, TriggerType.MANUAL);
     }
 
     /**

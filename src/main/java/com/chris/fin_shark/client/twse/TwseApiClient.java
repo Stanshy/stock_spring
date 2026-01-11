@@ -1,4 +1,4 @@
-package com.chris.fin_shark.client;
+package com.chris.fin_shark.client.twse;
 
 import com.chris.fin_shark.common.dto.external.TwseApiResponse;
 import com.chris.fin_shark.common.dto.external.TwseStockPriceData;

@@ -10,7 +10,7 @@ import com.chris.fin_shark.common.enums.JobStatus;
 import com.chris.fin_shark.m06.converter.JobExecutionConverter;
 import com.chris.fin_shark.common.dto.job.JobExecutionDTO;
 import com.chris.fin_shark.common.dto.job.JobStatusDTO;
-import com.chris.fin_shark.m06.job.StockPriceSyncJob;
+import com.chris.fin_shark.m06.job.*;
 import com.chris.fin_shark.m06.repository.JobExecutionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +44,10 @@ public class JobManagementService {
     private final JobExecutionRepository jobExecutionRepository;
     private final JobExecutionConverter jobExecutionConverter;
     private final StockPriceSyncJob stockPriceSyncJob;
+    private final InstitutionalTradingSyncJob institutionalTradingSyncJob;
+    private final MarginTradingSyncJob marginTradingSyncJob;
+    private final FinancialStatementSyncJob financialStatementSyncJob;
+    private final DataQualityCheckJob dataQualityCheckJob;
 
     /**
      * 分頁查詢 Job 執行記錄
@@ -176,33 +180,56 @@ public class JobManagementService {
     }
 
     /**
-     * 手動觸發財報同步 Job
-     * <p>
-     * TODO: 待 P1 實作財報同步功能後實作
-     * </p>
+     * 觸發法人買賣超同步
      *
+     * @param tradeDate 交易日期
      * @return Job 執行記錄
      */
-    @Transactional
-    public JobExecutionDTO triggerFinancialSync() {
-        log.info("手動觸發財報同步");
-
-        throw new BusinessException(ErrorCode.SERVICE_UNAVAILABLE, "財報同步功能尚未實作");
+    public JobExecution triggerInstitutionalSync(LocalDate tradeDate) {
+        log.info("手動觸發法人買賣超同步: tradeDate={}", tradeDate);
+        institutionalTradingSyncJob.syncInstitutionalTradingManually(tradeDate);
+        // 查詢並返回最新的執行記錄
+        return jobExecutionRepository.findLatestByJobName("InstitutionalTradingSync")
+                .orElse(null);
     }
 
     /**
-     * 手動觸發資料品質檢核 Job
-     * <p>
-     * TODO: 待實作資料品質檢核邏輯後實作
-     * </p>
+     * 觸發融資融券同步
+     *
+     * @param tradeDate 交易日期
+     * @return Job 執行記錄
+     */
+    public JobExecution triggerMarginSync(LocalDate tradeDate) {
+        log.info("手動觸發融資融券同步: tradeDate={}", tradeDate);
+        marginTradingSyncJob.syncMarginTradingManually(tradeDate);
+        return jobExecutionRepository.findLatestByJobName("MarginTradingSync")
+                .orElse(null);
+    }
+
+    /**
+     * 觸發財報同步
+     *
+     * @param year    年度
+     * @param quarter 季度
+     * @return Job 執行記錄
+     */
+    public JobExecution triggerFinancialSync(int year, short quarter) {
+        log.info("手動觸發財報同步: year={}, quarter={}", year, quarter);
+        financialStatementSyncJob.syncFinancialStatementsManually(year, quarter);
+        return jobExecutionRepository.findLatestByJobName("FinancialStatementSync")
+                .orElse(null);
+    }
+
+    /**
+     * 觸發資料品質檢核
      *
      * @return Job 執行記錄
      */
-    @Transactional
-    public JobExecutionDTO triggerDataQualityCheck() {
+    public JobExecution triggerQualityCheck() {
         log.info("手動觸發資料品質檢核");
-
-        throw new BusinessException(ErrorCode.SERVICE_UNAVAILABLE, "資料品質檢核功能尚未實作");
+        dataQualityCheckJob.runQualityCheckManually();
+        return jobExecutionRepository.findLatestByJobName("DataQualityCheck")
+                .orElse(null);
     }
 
 

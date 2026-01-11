@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chris.fin_shark.m06.mapper.FinancialStatementMapper">
+
+    <!-- 批次插入財報資料（UPSERT） -->
+    <insert id="batchInsert">
+        INSERT INTO financial_statements (
+            stock_id, year, quarter, report_type,
+            revenue, operating_income, net_income, gross_profit, operating_expense,
+            total_assets, total_liabilities, equity, current_assets, current_liabilities,
+            operating_cash_flow, investing_cash_flow, financing_cash_flow, free_cash_flow,
+            eps, bps,
+            publish_date, source,
+            created_at, updated_at
+        ) VALUES
+        <foreach collection="statements" item="item" separator=",">
+        (
+            #{item.stockId},
+            #{item.year},
+            #{item.quarter},
+            #{item.reportType},
+            #{item.revenue},
+            #{item.operatingIncome},
+            #{item.netIncome},
+            #{item.grossProfit},
+            #{item.operatingExpense},
+            #{item.totalAssets},
+            #{item.totalLiabilities},
+            #{item.equity},
+            #{item.currentAssets},
+            #{item.currentLiabilities},
+            #{item.operatingCashFlow},
+            #{item.investingCashFlow},
+            #{item.financingCashFlow},
+            #{item.freeCashFlow},
+            #{item.eps},
+            #{item.bps},
+            #{item.publishDate},
+            #{item.source},
+            NOW(),
+            NOW()
+        )
+        </foreach>
+        ON CONFLICT (stock_id, year, quarter, report_type)
+        DO UPDATE SET
+            revenue = EXCLUDED.revenue,
+            operating_income = EXCLUDED.operating_income,
+            net_income = EXCLUDED.net_income,
+            gross_profit = EXCLUDED.gross_profit,
+            operating_expense = EXCLUDED.operating_expense,
+            total_assets = EXCLUDED.total_assets,
+            total_liabilities = EXCLUDED.total_liabilities,
+            equity = EXCLUDED.equity,
+            current_assets = EXCLUDED.current_assets,
+            current_liabilities = EXCLUDED.current_liabilities,
+            operating_cash_flow = EXCLUDED.operating_cash_flow,
+            investing_cash_flow = EXCLUDED.investing_cash_flow,
+            financing_cash_flow = EXCLUDED.financing_cash_flow,
+            free_cash_flow = EXCLUDED.free_cash_flow,
+            eps = EXCLUDED.eps,
+            bps = EXCLUDED.bps,
+            publish_date = EXCLUDED.publish_date,
+            source = EXCLUDED.source,
+            updated_at = NOW()
+    </insert>
+
+    <!-- 批次更新財報資料 -->
+    <update id="batchUpdate">
+        <foreach collection="statements" item="item" separator=";">
+            UPDATE financial_statements SET
+                revenue = #{item.revenue},
+                operating_income = #{item.operatingIncome},
+                net_income = #{item.netIncome},
+                gross_profit = #{item.grossProfit},
+                operating_expense = #{item.operatingExpense},
+                total_assets = #{item.totalAssets},
+                total_liabilities = #{item.totalLiabilities},
+                equity = #{item.equity},
+                current_assets = #{item.currentAssets},
+                current_liabilities = #{item.currentLiabilities},
+                operating_cash_flow = #{item.operatingCashFlow},
+                investing_cash_flow = #{item.investingCashFlow},
+                financing_cash_flow = #{item.financingCashFlow},
+                free_cash_flow = #{item.freeCashFlow},
+                eps = #{item.eps},
+                bps = #{item.bps},
+                publish_date = #{item.publishDate},
+                source = #{item.source},
+                updated_at = NOW()
+            WHERE stock_id = #{item.stockId}
+              AND year = #{item.year}
+              AND quarter = #{item.quarter}
+        </foreach>
+    </update>
+
+    <!-- 查詢財務比率趨勢 -->
+    <select id="getFinancialTrend" resultType="com.chris.fin_shark.m06.domain.FinancialStatement">
+        SELECT *
+        FROM financial_statements
+        WHERE stock_id = #{stockId}
+        ORDER BY year DESC, quarter DESC
+        LIMIT #{quarters}
+    </select>
+
+    <!-- 查詢缺少的財報期間 -->
+    <select id="findMissingPeriods" resultType="java.lang.String">
+        WITH expected_periods AS (
+            SELECT y.year, q.quarter
+            FROM generate_series(#{startYear}, #{endYear}) AS y(year)
+            CROSS JOIN (VALUES (1), (2), (3), (4)) AS q(quarter)
+        )
+        SELECT ep.year || '-Q' || ep.quarter AS period
+        FROM expected_periods ep
+        LEFT JOIN financial_statements fs
+            ON fs.stock_id = #{stockId}
+            AND fs.year = ep.year
+            AND fs.quarter = ep.quarter
+        WHERE fs.statement_id IS NULL
+        ORDER BY ep.year, ep.quarter
+    </select>
+
+    <!-- 查詢 ROE 排行 -->
+    <select id="getTopROE" resultType="com.chris.fin_shark.m06.domain.FinancialStatement">
+        SELECT *
+        FROM financial_statements
+        WHERE year = #{year}
+          AND quarter = #{quarter}
+          AND equity > 0
+          AND net_income IS NOT NULL
+        ORDER BY (net_income / equity) DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

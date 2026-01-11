@@ -1,6 +1,6 @@
 package com.chris.fin_shark.m06.service;
 
-import com.chris.fin_shark.client.TwseApiClient;
+import com.chris.fin_shark.client.twse.TwseApiClient;
 import com.chris.fin_shark.common.domain.JobExecution;
 import com.chris.fin_shark.common.enums.JobStatus;
 import com.chris.fin_shark.common.enums.JobType;
@@ -88,7 +88,7 @@ public class StockPriceSyncService {
 
                 // 更新進度
                 execution.setProcessedItems(successCount + failCount);
-//       JOBE表         jobExecutionRepository.save(execution);
+                jobExecutionRepository.save(execution);
 
                 // 避免 API 限流，每次請求間隔 100ms
                 Thread.sleep(100);
