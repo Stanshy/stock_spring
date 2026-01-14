@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>選股器</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="app">
+<aside class="sidebar">
+<div style="font-weight:bold;margin-bottom:12px">🦈 FinShark</div>
+<a href="index.html" class="nav">市場總覽</a><a href="watchlist.html" class="nav">自選股</a><a href="technical.html" class="nav">技術分析</a><a href="fundamental.html" class="nav">基本面</a><a href="chip.html" class="nav">籌碼分析</a><a href="screener.html" class="nav on">選股器</a><a href="signals.html" class="nav">訊號中心</a><a href="alerts.html" class="nav">警示設定</a><a href="portfolio.html" class="nav">投資組合</a><a href="admin.html" class="nav">系統管理</a>
+</aside>
+<main class="main">
+<div class="header"><b>選股器</b><div><button class="btn">儲存策略</button></div></div>
+
+<div style="display:flex;gap:10px">
+<div style="width:240px">
+<div class="card"><div class="card-title">篩選條件</div><div class="card-body">
+<div style="margin-bottom:8px"><b>市場別</b><br><label><input type="checkbox" checked> 上市</label> <label><input type="checkbox"> 上櫃</label></div>
+<div style="margin-bottom:8px"><b>產業</b><br><select class="input"><option>全部產業</option><option>半導體</option><option>金融</option></select></div>
+<div style="margin-bottom:8px"><b>本益比 P/E</b><br><input class="input" style="width:60px" value="5"> ~ <input class="input" style="width:60px" value="20"></div>
+<div style="margin-bottom:8px"><b>ROE (%)</b><br><input class="input" style="width:60px" value="15"> ~ <input class="input" style="width:60px"></div>
+<div style="margin-bottom:8px"><b>殖利率 (%)</b><br><input class="input" style="width:60px" value="3"> ~ <input class="input" style="width:60px"></div>
+<div style="margin-bottom:8px"><b>外資買賣</b><br><select class="input"><option>不限</option><option>連續買超3日</option><option>連續買超5日</option></select></div>
+<div style="margin-bottom:8px"><b>技術面</b><br><label><input type="checkbox"> 站上月線</label><br><label><input type="checkbox"> MACD金叉</label><br><label><input type="checkbox"> KD金叉</label></div>
+<button class="btn" style="width:100%">搜尋</button>
+</div></div>
+</div>
+
+<div style="flex:1">
+<div style="margin-bottom:8px">
+<span style="color:var(--muted)">已套用：</span>
+<span class="tag tag-b">上市</span>
+<span class="tag tag-b">P/E 5-20</span>
+<span class="tag tag-b">ROE>15%</span>
+</div>
+<div class="card"><div class="card-title">搜尋結果：128 檔</div><div class="card-body">
+<table><tr><th><input type="checkbox"> 股票</th><th>現價</th><th>漲跌</th><th>P/E</th><th>ROE</th><th>殖利率</th><th>外資</th><th>投信</th></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2330 台積電</a></td><td>580</td><td class="up">+0.87%</td><td>22.5</td><td class="up">28.5%</td><td>2.50%</td><td class="up">+6,523</td><td class="up">+1,250</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2454 聯發科</a></td><td>856</td><td class="up">+2.15%</td><td>18.2</td><td class="up">22.5%</td><td>3.80%</td><td class="up">+3,256</td><td class="up">+890</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2317 鴻海</a></td><td>105.5</td><td class="up">+1.44%</td><td>10.5</td><td>12.3%</td><td>5.20%</td><td class="up">+8,965</td><td class="down">-520</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2308 台達電</a></td><td>320</td><td class="down">-0.62%</td><td>18.5</td><td>18.6%</td><td>3.20%</td><td class="up">+2,156</td><td class="up">+680</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2882 國泰金</a></td><td>45.6</td><td class="up">+0.88%</td><td>8.5</td><td>12.8%</td><td>5.80%</td><td class="up">+12,568</td><td class="up">+2,350</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">2881 富邦金</a></td><td>68.5</td><td class="up">+1.18%</td><td>9.2</td><td>14.5%</td><td>4.80%</td><td class="up">+8,523</td><td class="up">+1,560</td></tr>
+<tr><td><input type="checkbox"> <a href="technical.html">3008 大立光</a></td><td>2,450</td><td class="up">+3.80%</td><td>15.2</td><td class="up">25.2%</td><td>2.80%</td><td class="up">+856</td><td class="up">+125</td></tr>
+</table>
+<div style="margin-top:8px;text-align:center;color:var(--muted)">1-20 / 128 | <a href="#">上一頁</a> 1 2 3 ... 7 <a href="#">下一頁</a></div>
+</div></div>
+</div>
+</div>
+</main></div></body></html>

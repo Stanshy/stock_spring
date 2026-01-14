@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>投資組合</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="app">
+<aside class="sidebar">
+<div style="font-weight:bold;margin-bottom:12px">🦈 FinShark</div>
+<a href="index.html" class="nav">市場總覽</a><a href="watchlist.html" class="nav">自選股</a><a href="technical.html" class="nav">技術分析</a><a href="fundamental.html" class="nav">基本面</a><a href="chip.html" class="nav">籌碼分析</a><a href="screener.html" class="nav">選股器</a><a href="signals.html" class="nav">訊號中心</a><a href="alerts.html" class="nav">警示設定</a><a href="portfolio.html" class="nav on">投資組合</a><a href="admin.html" class="nav">系統管理</a>
+</aside>
+<main class="main">
+<div class="header"><b>投資組合</b><div><button class="btn">+ 新增交易</button></div></div>
+
+<div class="grid g4">
+<div class="card"><div class="card-body"><div style="color:var(--muted)">總市值</div><b style="font-size:18px">$2,856,420</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">總成本</div><b style="font-size:18px">$2,450,000</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">未實現損益</div><b style="font-size:18px" class="up">+$406,420</b><br><span class="up">+16.59%</span></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">今日損益</div><b style="font-size:18px" class="up">+$25,680</b><br><span class="up">+0.91%</span></div></div>
+</div>
+
+<div class="card"><div class="card-title">持股明細</div><div class="card-body">
+<table><tr><th>股票</th><th>張數</th><th>成本</th><th>現價</th><th>市值</th><th>損益</th><th>報酬率</th><th>占比</th></tr>
+<tr><td><a href="technical.html">2330 台積電</a></td><td>2</td><td>520</td><td>580</td><td>1,160,000</td><td class="up">+120,000</td><td class="up">+11.54%</td><td>40.6%</td></tr>
+<tr><td><a href="technical.html">2454 聯發科</a></td><td>1</td><td>750</td><td>856</td><td>856,000</td><td class="up">+106,000</td><td class="up">+14.13%</td><td>30.0%</td></tr>
+<tr><td><a href="technical.html">2317 鴻海</a></td><td>5</td><td>98</td><td>105.5</td><td>527,500</td><td class="up">+37,500</td><td class="up">+7.65%</td><td>18.5%</td></tr>
+<tr><td><a href="technical.html">2882 國泰金</a></td><td>3</td><td>42</td><td>45.6</td><td>136,800</td><td class="up">+10,800</td><td class="up">+8.57%</td><td>4.8%</td></tr>
+<tr><td><a href="technical.html">2412 中華電</a></td><td>1</td><td>125</td><td>120</td><td>120,000</td><td class="down">-5,000</td><td class="down">-4.00%</td><td>4.2%</td></tr>
+<tr style="font-weight:bold;background:#f8f8ff"><td>合計</td><td>12</td><td></td><td></td><td>2,800,300</td><td class="up">+269,300</td><td class="up">+10.63%</td><td>100%</td></tr>
+</table>
+</div></div>
+
+<div class="grid g2">
+<div class="card"><div class="card-title">資產配置</div><div class="card-body">
+<div class="bar"><span class="bar-l">半導體</span><div class="bar-f" style="width:140px;background:var(--accent)"></div><span class="bar-v">70.6%</span></div>
+<div class="bar"><span class="bar-l">電子</span><div class="bar-f" style="width:40px;background:var(--accent)"></div><span class="bar-v">18.5%</span></div>
+<div class="bar"><span class="bar-l">金融</span><div class="bar-f" style="width:10px;background:var(--accent)"></div><span class="bar-v">4.8%</span></div>
+<div class="bar"><span class="bar-l">電信</span><div class="bar-f" style="width:10px;background:var(--accent)"></div><span class="bar-v">4.2%</span></div>
+</div></div>
+<div class="card"><div class="card-title">交易紀錄</div><div class="card-body" style="font-size:11px">
+<table><tr><th>日期</th><th>股票</th><th>類型</th><th>張數</th><th>價格</th></tr>
+<tr><td>12/20</td><td>2330</td><td><span class="tag tag-g">買</span></td><td>1</td><td>568</td></tr>
+<tr><td>12/15</td><td>2882</td><td><span class="tag tag-g">買</span></td><td>2</td><td>44</td></tr>
+<tr><td>12/10</td><td>2454</td><td><span class="tag tag-r">賣</span></td><td>1</td><td>820</td></tr>
+<tr><td>12/05</td><td>2317</td><td><span class="tag tag-g">買</span></td><td>3</td><td>100</td></tr>
+</table>
+</div></div>
+</div>
+</main></div></body></html>

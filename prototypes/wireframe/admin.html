@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>系統管理</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="app">
+<aside class="sidebar">
+<div style="font-weight:bold;margin-bottom:12px">🦈 FinShark</div>
+<a href="index.html" class="nav">市場總覽</a><a href="watchlist.html" class="nav">自選股</a><a href="technical.html" class="nav">技術分析</a><a href="fundamental.html" class="nav">基本面</a><a href="chip.html" class="nav">籌碼分析</a><a href="screener.html" class="nav">選股器</a><a href="signals.html" class="nav">訊號中心</a><a href="alerts.html" class="nav">警示設定</a><a href="portfolio.html" class="nav">投資組合</a><a href="admin.html" class="nav on">系統管理</a>
+</aside>
+<main class="main">
+<div class="header"><b>系統管理</b></div>
+
+<div class="tabs"><span class="tab on">資料同步</span><span class="tab">排程作業</span><span class="tab">系統監控</span><span class="tab">使用者</span></div>
+
+<div class="grid g4">
+<div class="card"><div class="card-body"><div style="color:var(--muted)">今日同步</div><b style="font-size:18px" class="up">1,856</b> 檔</div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">執行中作業</div><b style="font-size:18px">3</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">異常紀錄</div><b style="font-size:18px" class="down">2</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">系統狀態</div><span class="tag tag-g">正常</span></div></div>
+</div>
+
+<div class="grid g2">
+<div class="card"><div class="card-title">資料同步狀態</div><div class="card-body">
+<table><tr><th>資料類型</th><th>最後同步</th><th>筆數</th><th>狀態</th><th>操作</th></tr>
+<tr><td>股價資料</td><td>13:30:00</td><td>1,856</td><td><span class="tag tag-g">完成</span></td><td><button class="btn">同步</button></td></tr>
+<tr><td>法人買賣超</td><td>13:30:00</td><td>1,856</td><td><span class="tag tag-g">完成</span></td><td><button class="btn">同步</button></td></tr>
+<tr><td>融資融券</td><td>13:30:00</td><td>1,856</td><td><span class="tag tag-g">完成</span></td><td><button class="btn">同步</button></td></tr>
+<tr><td>財務報表</td><td>09:00:00</td><td>1,652</td><td><span class="tag tag-g">完成</span></td><td><button class="btn">同步</button></td></tr>
+<tr><td>技術指標</td><td>13:25:00</td><td>1,856</td><td><span class="tag tag-y">執行中</span></td><td><button class="btn" disabled>同步</button></td></tr>
+</table></div></div>
+
+<div class="card"><div class="card-title">排程作業</div><div class="card-body">
+<table><tr><th>作業名稱</th><th>排程</th><th>上次執行</th><th>下次執行</th><th>狀態</th></tr>
+<tr><td>股價同步</td><td>每5分鐘</td><td>13:30</td><td>13:35</td><td><span class="tag tag-g">啟用</span></td></tr>
+<tr><td>技術指標計算</td><td>每5分鐘</td><td>13:25</td><td>13:30</td><td><span class="tag tag-y">執行中</span></td></tr>
+<tr><td>籌碼分析</td><td>每日15:00</td><td>昨日15:00</td><td>今日15:00</td><td><span class="tag tag-g">啟用</span></td></tr>
+<tr><td>訊號掃描</td><td>每10分鐘</td><td>13:20</td><td>13:30</td><td><span class="tag tag-g">啟用</span></td></tr>
+<tr><td>財報更新</td><td>每日09:00</td><td>今日09:00</td><td>明日09:00</td><td><span class="tag tag-g">啟用</span></td></tr>
+</table></div></div>
+</div>
+
+<div class="grid g2">
+<div class="card"><div class="card-title">系統監控</div><div class="card-body">
+<table><tr><td>CPU 使用率</td><td>35%</td></tr><tr><td>記憶體</td><td>4.2 GB / 8 GB</td></tr><tr><td>磁碟空間</td><td>125 GB / 500 GB</td></tr><tr><td>資料庫連線</td><td><span class="tag tag-g">正常</span></td></tr><tr><td>API 回應時間</td><td>45ms</td></tr></table>
+</div></div>
+<div class="card"><div class="card-title">最近日誌</div><div class="card-body" style="font-size:10px;font-family:monospace">
+<div style="color:var(--muted)">[13:30:05] INFO 股價同步完成 1856筆</div>
+<div style="color:var(--muted)">[13:30:00] INFO 開始股價同步</div>
+<div style="color:var(--up)">[13:28:15] WARN 聯電(2303) 資料異常已修復</div>
+<div style="color:var(--muted)">[13:25:30] INFO 技術指標計算中...</div>
+<div style="color:var(--down)">[13:20:05] ERROR API逾時 重試中...</div>
+<div style="color:var(--muted)">[13:20:00] INFO 訊號掃描完成 156訊號</div>
+</div></div>
+</div>
+</main></div></body></html>

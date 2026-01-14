@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>訊號中心</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="app">
+<aside class="sidebar">
+<div style="font-weight:bold;margin-bottom:12px">🦈 FinShark</div>
+<a href="index.html" class="nav">市場總覽</a><a href="watchlist.html" class="nav">自選股</a><a href="technical.html" class="nav">技術分析</a><a href="fundamental.html" class="nav">基本面</a><a href="chip.html" class="nav">籌碼分析</a><a href="screener.html" class="nav">選股器</a><a href="signals.html" class="nav on">訊號中心</a><a href="alerts.html" class="nav">警示設定</a><a href="portfolio.html" class="nav">投資組合</a><a href="admin.html" class="nav">系統管理</a>
+</aside>
+<main class="main">
+<div class="header"><b>訊號中心</b><div><select class="input" style="width:100px"><option>全部類型</option><option>買進訊號</option><option>賣出訊號</option></select></div></div>
+
+<div class="grid g4">
+<div class="card"><div class="card-body"><div style="color:var(--muted)">今日訊號</div><b style="font-size:20px">156</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">買進訊號</div><b style="font-size:20px" class="up">89</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">賣出訊號</div><b style="font-size:20px" class="down">45</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">注意訊號</div><b style="font-size:20px">22</b></div></div>
+</div>
+
+<div class="tabs"><span class="tab on">全部</span><span class="tab">技術面</span><span class="tab">籌碼面</span><span class="tab">基本面</span></div>
+
+<div class="card"><div class="card-title">即時訊號</div><div class="card-body">
+<table><tr><th>時間</th><th>股票</th><th>訊號</th><th>來源</th><th>說明</th><th>強度</th></tr>
+<tr><td>13:30</td><td><a href="technical.html">2330 台積電</a></td><td><span class="tag tag-r">賣出</span></td><td>KD指標</td><td>KD高檔死亡交叉</td><td>★★★☆☆</td></tr>
+<tr><td>13:25</td><td><a href="technical.html">2454 聯發科</a></td><td><span class="tag tag-g">買進</span></td><td>MACD</td><td>MACD黃金交叉</td><td>★★★★☆</td></tr>
+<tr><td>13:20</td><td><a href="technical.html">2317 鴻海</a></td><td><span class="tag tag-y">注意</span></td><td>籌碼</td><td>外資連續買超5日</td><td>★★★☆☆</td></tr>
+<tr><td>13:15</td><td><a href="technical.html">2412 中華電</a></td><td><span class="tag tag-g">買進</span></td><td>均線</td><td>突破月線</td><td>★★☆☆☆</td></tr>
+<tr><td>13:10</td><td><a href="technical.html">2882 國泰金</a></td><td><span class="tag tag-g">買進</span></td><td>籌碼</td><td>投信連續買超8日</td><td>★★★★☆</td></tr>
+<tr><td>13:05</td><td><a href="technical.html">3008 大立光</a></td><td><span class="tag tag-r">賣出</span></td><td>RSI</td><td>RSI超買區回落</td><td>★★★☆☆</td></tr>
+<tr><td>13:00</td><td><a href="technical.html">2303 聯電</a></td><td><span class="tag tag-g">買進</span></td><td>布林</td><td>突破布林中軌</td><td>★★☆☆☆</td></tr>
+<tr><td>12:55</td><td><a href="technical.html">2881 富邦金</a></td><td><span class="tag tag-y">注意</span></td><td>量能</td><td>成交量放大150%</td><td>★★★☆☆</td></tr>
+</table>
+</div></div>
+
+<div class="grid g2">
+<div class="card"><div class="card-title">訊號統計 - 今日</div><div class="card-body">
+<div class="bar"><span class="bar-l">MACD</span><div class="bar-f" style="width:80px;background:var(--accent)"></div><span class="bar-v">32</span></div>
+<div class="bar"><span class="bar-l">KD</span><div class="bar-f" style="width:60px;background:var(--accent)"></div><span class="bar-v">28</span></div>
+<div class="bar"><span class="bar-l">均線</span><div class="bar-f" style="width:50px;background:var(--accent)"></div><span class="bar-v">25</span></div>
+<div class="bar"><span class="bar-l">籌碼</span><div class="bar-f" style="width:70px;background:var(--accent)"></div><span class="bar-v">35</span></div>
+<div class="bar"><span class="bar-l">RSI</span><div class="bar-f" style="width:40px;background:var(--accent)"></div><span class="bar-v">18</span></div>
+</div></div>
+<div class="card"><div class="card-title">訊號規則設定</div><div class="card-body" style="font-size:11px">
+<div><input type="checkbox" checked> MACD 黃金/死亡交叉</div>
+<div><input type="checkbox" checked> KD 黃金/死亡交叉</div>
+<div><input type="checkbox" checked> 均線突破 (MA5/10/20)</div>
+<div><input type="checkbox" checked> RSI 超買超賣</div>
+<div><input type="checkbox" checked> 外資連續買賣超</div>
+<div><input type="checkbox" checked> 投信連續買賣超</div>
+<div><input type="checkbox"> 融資大增</div>
+<div><input type="checkbox"> 融券大增</div>
+<div style="margin-top:8px"><button class="btn">儲存設定</button></div>
+</div></div>
+</div>
+</main></div></body></html>

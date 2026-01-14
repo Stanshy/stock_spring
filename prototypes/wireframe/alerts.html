@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>警示設定</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="app">
+<aside class="sidebar">
+<div style="font-weight:bold;margin-bottom:12px">🦈 FinShark</div>
+<a href="index.html" class="nav">市場總覽</a><a href="watchlist.html" class="nav">自選股</a><a href="technical.html" class="nav">技術分析</a><a href="fundamental.html" class="nav">基本面</a><a href="chip.html" class="nav">籌碼分析</a><a href="screener.html" class="nav">選股器</a><a href="signals.html" class="nav">訊號中心</a><a href="alerts.html" class="nav on">警示設定</a><a href="portfolio.html" class="nav">投資組合</a><a href="admin.html" class="nav">系統管理</a>
+</aside>
+<main class="main">
+<div class="header"><b>警示設定</b><div><button class="btn">+ 新增警示</button></div></div>
+
+<div class="grid g3">
+<div class="card"><div class="card-body"><div style="color:var(--muted)">啟用中</div><b style="font-size:20px">12</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">今日觸發</div><b style="font-size:20px" class="up">3</b></div></div>
+<div class="card"><div class="card-body"><div style="color:var(--muted)">已暫停</div><b style="font-size:20px">5</b></div></div>
+</div>
+
+<div class="card"><div class="card-title">我的警示</div><div class="card-body">
+<table><tr><th>股票</th><th>條件</th><th>目標值</th><th>現價</th><th>狀態</th><th>操作</th></tr>
+<tr><td>2330 台積電</td><td>價格 ≥</td><td>600</td><td>580</td><td><span class="tag tag-b">監控中</span></td><td><a href="#">編輯</a> <a href="#">刪除</a></td></tr>
+<tr><td>2330 台積電</td><td>價格 ≤</td><td>550</td><td>580</td><td><span class="tag tag-b">監控中</span></td><td><a href="#">編輯</a> <a href="#">刪除</a></td></tr>
+<tr><td>2454 聯發科</td><td>漲幅 ≥</td><td>5%</td><td>+2.15%</td><td><span class="tag tag-b">監控中</span></td><td><a href="#">編輯</a> <a href="#">刪除</a></td></tr>
+<tr><td>2317 鴻海</td><td>外資連買</td><td>≥5日</td><td>3日</td><td><span class="tag tag-b">監控中</span></td><td><a href="#">編輯</a> <a href="#">刪除</a></td></tr>
+<tr><td>2882 國泰金</td><td>價格 ≥</td><td>48</td><td>45.6</td><td><span class="tag tag-b">監控中</span></td><td><a href="#">編輯</a> <a href="#">刪除</a></td></tr>
+<tr style="background:#fff8f8"><td>3008 大立光</td><td>價格 ≥</td><td>2400</td><td>2450</td><td><span class="tag tag-g">已觸發</span></td><td><a href="#">重設</a> <a href="#">刪除</a></td></tr>
+</table>
+</div></div>
+
+<div class="grid g2">
+<div class="card"><div class="card-title">通知紀錄</div><div class="card-body" style="font-size:11px">
+<div style="padding:4px 0;border-bottom:1px solid var(--border)">12/22 13:25 <b>3008 大立光</b> 價格達到 2400</div>
+<div style="padding:4px 0;border-bottom:1px solid var(--border)">12/21 10:30 <b>2454 聯發科</b> 漲幅達 5%</div>
+<div style="padding:4px 0;border-bottom:1px solid var(--border)">12/20 09:15 <b>2330 台積電</b> 外資連買5日</div>
+<div style="padding:4px 0">12/19 14:00 <b>2882 國泰金</b> 價格達到 45</div>
+</div></div>
+<div class="card"><div class="card-title">通知設定</div><div class="card-body" style="font-size:11px">
+<div><input type="checkbox" checked> Email 通知</div>
+<div><input type="checkbox" checked> 網頁推播</div>
+<div><input type="checkbox"> LINE 通知</div>
+<div><input type="checkbox"> Telegram 通知</div>
+<div style="margin-top:8px"><b>通知頻率</b><br><select class="input"><option>即時</option><option>每小時彙整</option><option>每日彙整</option></select></div>
+<div style="margin-top:8px"><button class="btn">儲存設定</button></div>
+</div></div>
+</div>
+</main></div></body></html>

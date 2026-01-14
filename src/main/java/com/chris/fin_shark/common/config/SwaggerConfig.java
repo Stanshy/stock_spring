@@ -68,9 +68,9 @@ public class SwaggerConfig {
                         )
                         // 聯絡資訊
                         .contact(new Contact()
-                                .name("Chris")
-                                .email("chris@example.com")
-                                .url("https://github.com/chris"))
+                                .name("Stanshy")
+                                .email("stanshy0407@gmail.com")
+                                .url("https://github.com/Stanshy"))
                         // 授權資訊
                         .license(new License()
                                 .name("MIT License")
