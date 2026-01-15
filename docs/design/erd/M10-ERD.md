@@ -21,7 +21,7 @@ erDiagram
         boolean is_active "是否活躍"
     }
 
-    daily_prices {
+    stock_prices {
         bigint price_id PK "價格ID"
         varchar stock_id FK "股票代碼"
         date trade_date "交易日期"
@@ -159,7 +159,7 @@ erDiagram
     }
 
     %% 關聯關係
-    stocks ||--o{ daily_prices : "has"
+    stocks ||--o{ stock_prices : "has"
     stocks ||--o{ technical_indicator_results : "has"
     stocks ||--o{ kline_pattern_results : "has"
     stocks ||--o{ chart_pattern_results : "has"
@@ -168,10 +168,10 @@ erDiagram
     stocks ||--o{ pattern_signals : "has"
     stocks ||--o{ pattern_statistics : "has"
 
-    daily_prices ||--o{ kline_pattern_results : "偵測來源"
-    daily_prices ||--o{ chart_pattern_results : "偵測來源"
-    daily_prices ||--o{ trend_analysis_results : "分析來源"
-    daily_prices ||--o{ support_resistance_levels : "識別來源"
+    stock_prices ||--o{ kline_pattern_results : "偵測來源"
+    stock_prices ||--o{ chart_pattern_results : "偵測來源"
+    stock_prices ||--o{ trend_analysis_results : "分析來源"
+    stock_prices ||--o{ support_resistance_levels : "識別來源"
 
     technical_indicator_results ||--o{ trend_analysis_results : "指標輔助"
 
@@ -191,10 +191,10 @@ erDiagram
 
 | 來源表 | 模組 | 目標表 (M10) | 關聯類型 | 說明 |
 |-------|------|-------------|---------|------|
-| daily_prices | M06 | kline_pattern_results | 計算依賴 | K 線型態偵測來源 |
-| daily_prices | M06 | chart_pattern_results | 計算依賴 | 圖表型態偵測來源 |
-| daily_prices | M06 | trend_analysis_results | 計算依賴 | 趨勢分析來源 |
-| daily_prices | M06 | support_resistance_levels | 計算依賴 | 支撐壓力識別來源 |
+| stock_prices | M06 | kline_pattern_results | 計算依賴 | K 線型態偵測來源 |
+| stock_prices | M06 | chart_pattern_results | 計算依賴 | 圖表型態偵測來源 |
+| stock_prices | M06 | trend_analysis_results | 計算依賴 | 趨勢分析來源 |
+| stock_prices | M06 | support_resistance_levels | 計算依賴 | 支撐壓力識別來源 |
 | technical_indicator_results | M07 | trend_analysis_results | 計算依賴 | 均線、ADX 等指標輔助 |
 | stocks | M06 | 所有 M10 表 | 外鍵關聯 | 股票主表 |
 

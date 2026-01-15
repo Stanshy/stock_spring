@@ -3,7 +3,7 @@
 > **文件編號**: API-M07  
 > **模組名稱**: 技術分析模組  
 > **版本**: v2.0  
-> **最後更新**: 2026-01-03  
+> **最後更新**: 2026-01-15  
 > **狀態**: Draft
 
 ---
@@ -740,6 +740,87 @@ Content-Type: application/json
 | M07032 | 409 | 指標定義已存在 | 使用不同的指標名稱 |
 | M07041 | 404 | Job 執行記錄不存在 | 檢查 Job ID |
 | M07042 | 409 | Job 已在執行中 | 等待當前 Job 完成 |
+
+---
+
+### 4.4 P1 指標輸出欄位定義
+
+> **新增於**: 2026-01-15
+
+以下為 P1 進階組指標的輸出欄位說明：
+
+#### 趨勢類 (TREND)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| WMA | `wma_10`, `wma_20` | Number | 加權移動平均值 |
+| HMA | `hma_9`, `hma_16` | Number | Hull 移動平均值 |
+| AROON | `aroon_up_25`, `aroon_down_25`, `aroon_osc_25` | Number | 阿隆上軌/下軌/震盪器 (0-100) |
+| | `aroon_signal` | String | 信號：STRONG_UPTREND, STRONG_DOWNTREND, UPTREND, DOWNTREND, NEUTRAL |
+| SAR | `sar` | Number | 拋物線停損點價格 |
+| | `sar_trend`, `sar_signal` | String | 趨勢方向、買賣信號 |
+| SUPERTREND | `supertrend_10_3` | Number | 超級趨勢值 |
+| | `supertrend_trend`, `supertrend_signal` | String | 趨勢方向、買賣信號 |
+
+#### 動能類 (MOMENTUM)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| ROC | `roc_12` | Number | 變動率百分比 |
+| | `roc_signal` | String | STRONG_BULLISH, BULLISH, BEARISH, STRONG_BEARISH |
+| MOM | `mom_10` | Number | 動量值（價差） |
+| | `mom_signal` | String | BUY, SELL, BULLISH, BEARISH, NEUTRAL |
+| WILLR | `willr_14` | Number | 威廉指標值 (-100 到 0) |
+| | `willr_signal` | String | OVERBOUGHT, OVERSOLD, NEUTRAL |
+| CCI | `cci_20` | Number | 順勢指標值 |
+| | `cci_signal` | String | OVERBOUGHT, OVERSOLD, NEUTRAL |
+| MFI | `mfi_14` | Number | 資金流量指標 (0-100) |
+| | `mfi_signal` | String | OVERBOUGHT, OVERSOLD, NEUTRAL |
+| STOCHRSI | `stochrsi_k`, `stochrsi_d` | Number | 隨機 RSI K/D 值 (0-100) |
+| | `stochrsi_signal` | String | STRONG_BUY, STRONG_SELL, OVERBOUGHT, OVERSOLD, NEUTRAL |
+
+#### 波動類 (VOLATILITY)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| DONCHIAN | `donchian_upper_20`, `donchian_middle_20`, `donchian_lower_20` | Number | 唐奇安通道上/中/下軌 |
+| | `donchian_bandwidth_20`, `donchian_position_20` | Number | 通道寬度、價格位置 (0-100%) |
+| | `donchian_signal` | String | BREAKOUT_UP, BREAKOUT_DOWN, IN_CHANNEL |
+| KELTNER | `keltner_upper`, `keltner_middle`, `keltner_lower` | Number | 肯特納通道上/中/下軌 |
+| | `keltner_bandwidth`, `keltner_position` | Number | 通道寬度、價格位置 |
+| | `keltner_signal` | String | BREAKOUT_UP, BREAKOUT_DOWN, ABOVE_MIDDLE, BELOW_MIDDLE |
+
+#### 成交量類 (VOLUME)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| AD | `ad` | Number | 累積/派發線值 |
+| | `ad_change` | Number | AD 變化量 |
+| | `ad_signal` | String | ACCUMULATION, DISTRIBUTION, BULLISH_DIVERGENCE, BEARISH_DIVERGENCE |
+| CMF | `cmf_20` | Number | 蔡金資金流量 (-1 到 +1) |
+| | `cmf_signal` | String | STRONG_BUYING, BUYING, NEUTRAL, SELLING, STRONG_SELLING |
+
+#### 支撐壓力類 (SUPPORT)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| PIVOT | `pivot_pp`, `pivot_r1`, `pivot_r2`, `pivot_r3` | Number | 樞軸點、壓力位 |
+| | `pivot_s1`, `pivot_s2`, `pivot_s3` | Number | 支撐位 |
+| | `pivot_signal` | String | ABOVE_R1, BELOW_S1, ABOVE_PP, BELOW_PP, AT_PP |
+| FIBRETRACEMENT | `fib_high`, `fib_low` | Number | 區間最高/最低價 |
+| | `fib_0`, `fib_236`, `fib_382`, `fib_500`, `fib_618`, `fib_786`, `fib_1000` | Number | 斐波那契水準 |
+| | `fib_trend` | String | UPTREND, DOWNTREND |
+| | `fib_signal` | String | STRONG_TREND, SHALLOW_RETRACE, MODERATE_RETRACE, DEEP_RETRACE, TREND_REVERSAL |
+
+#### 統計類 (STATISTICS)
+
+| 指標 | 輸出欄位 | 類型 | 說明 |
+|------|---------|------|------|
+| LINREG | `linreg_14` | Number | 線性回歸預測值 |
+| | `linreg_slope_14` | Number | 斜率 |
+| | `linreg_r2_14` | Number | R² 決定係數 (0-1) |
+| | `linreg_intercept_14` | Number | 截距 |
+| | `linreg_signal` | String | STRONG_UPTREND, UPTREND, STRONG_DOWNTREND, DOWNTREND, WEAK_TREND |
 
 ---
 

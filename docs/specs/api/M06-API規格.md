@@ -2,9 +2,9 @@
 
 > **文件編號**: API-M06
 > **模組名稱**: 資料管理模組
-> **版本**: v3.0
-> **最後更新**: 2026-01-10
-> **狀態**: Draft
+> **版本**: v3.1
+> **最後更新**: 2026-01-15
+> **狀態**: Active
 
 ---
 
@@ -2178,6 +2178,107 @@ Content-Type: application/json
 | M06103 | 500 | 資料補齊執行失敗 | 檢查資料源或聯絡管理員 |
 | M06104 | 200 | 沒有需要補齊的資料 | 資料已完整，無需處理 |
 | M06105 | 207 | 部分資料補齊成功 | 檢查失敗項目並重試 |
+
+---
+
+### 4.4 API 實作進度
+
+> **新增於**: 2026-01-15
+
+以下為各 API 端點群組的實作狀態：
+
+#### P0 已完成 API
+
+| API 群組 | 端點前綴 | API 數量 | 狀態 | Controller |
+|---------|---------|---------|------|------------|
+| 股票管理 | `/api/stocks` | 6 | ✅ | StockManagementController |
+| 市場資料查詢 | `/api/market-data` | 5 | ✅ | MarketDataQueryController |
+| 交易日曆 | `/api/trading-calendar` | 6 | ✅ | TradingCalendarController |
+| 資料品質 | `/api/data-quality` | 7 | ✅ | DataQualityController |
+| Job 管理 | `/api/jobs` | 9 | ✅ | JobManagementController |
+
+#### P1 已完成 API
+
+| API 群組 | 端點前綴 | API 數量 | 狀態 | Controller |
+|---------|---------|---------|------|------------|
+| 法人買賣超 | `/api/institutional` | 3 | ✅ | InstitutionalTradingController |
+| 融資融券 | `/api/margin` | 3 | ✅ | MarginTradingController |
+| 財務報表 | `/api/financials` | 4 | ✅ | FinancialStatementController |
+| 資料補齊 | `/api/data-repair` | 2 | ✅ | DataRepairController |
+
+#### API 輸出欄位說明
+
+**股價資料 (StockPriceDTO)**:
+
+| 欄位 | 類型 | 說明 |
+|-----|------|------|
+| `price_id` | Long | 價格記錄 ID |
+| `stock_id` | String | 股票代碼 |
+| `trade_date` | Date | 交易日期 |
+| `open_price` | BigDecimal | 開盤價 |
+| `high_price` | BigDecimal | 最高價 |
+| `low_price` | BigDecimal | 最低價 |
+| `close_price` | BigDecimal | 收盤價 |
+| `volume` | Long | 成交量 |
+| `turnover` | BigDecimal | 成交金額 |
+| `transactions` | Integer | 成交筆數 |
+| `change_price` | BigDecimal | 漲跌價 |
+| `change_percent` | BigDecimal | 漲跌幅(%) |
+
+**法人買賣超 (InstitutionalTradingDTO)**:
+
+| 欄位 | 類型 | 說明 |
+|-----|------|------|
+| `trading_id` | Long | 記錄 ID |
+| `stock_id` | String | 股票代碼 |
+| `trade_date` | Date | 交易日期 |
+| `foreign_buy` | Long | 外資買進 |
+| `foreign_sell` | Long | 外資賣出 |
+| `foreign_net` | Long | 外資淨買賣 |
+| `trust_buy` | Long | 投信買進 |
+| `trust_sell` | Long | 投信賣出 |
+| `trust_net` | Long | 投信淨買賣 |
+| `dealer_buy` | Long | 自營商買進 |
+| `dealer_sell` | Long | 自營商賣出 |
+| `dealer_net` | Long | 自營商淨買賣 |
+| `total_net` | Long | 三大法人淨買賣合計 |
+
+**融資融券 (MarginTradingDTO)**:
+
+| 欄位 | 類型 | 說明 |
+|-----|------|------|
+| `margin_id` | Long | 記錄 ID |
+| `stock_id` | String | 股票代碼 |
+| `trade_date` | Date | 交易日期 |
+| `margin_purchase` | Long | 融資買進 |
+| `margin_sell` | Long | 融資賣出 |
+| `margin_balance` | Long | 融資餘額 |
+| `margin_quota` | Long | 融資限額 |
+| `margin_usage_rate` | BigDecimal | 融資使用率(%) |
+| `short_purchase` | Long | 融券買進 |
+| `short_sell` | Long | 融券賣出 |
+| `short_balance` | Long | 融券餘額 |
+| `short_quota` | Long | 融券限額 |
+| `short_usage_rate` | BigDecimal | 融券使用率(%) |
+
+**財務報表 (FinancialStatementDTO)**:
+
+| 欄位 | 類型 | 說明 |
+|-----|------|------|
+| `statement_id` | Long | 報表 ID |
+| `stock_id` | String | 股票代碼 |
+| `year` | Integer | 年度 |
+| `quarter` | Short | 季度 (1-4) |
+| `report_type` | String | 報表類型 (Q/A) |
+| `revenue` | BigDecimal | 營業收入 |
+| `gross_profit` | BigDecimal | 毛利 |
+| `operating_income` | BigDecimal | 營業利益 |
+| `operating_expense` | BigDecimal | 營業費用 |
+| `net_income` | BigDecimal | 稅後淨利 |
+| `publish_date` | Date | 公告日期 |
+| `source` | String | 資料來源 |
+
+> 詳細開發記錄請參閱 [開發記錄](../../design/M06-開發記錄.md)
 
 ---
 

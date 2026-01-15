@@ -2,9 +2,9 @@
 
 > **文件編號**: API-M09
 > **模組名稱**: 籌碼分析模組
-> **版本**: v1.0
-> **最後更新**: 2026-01-11
-> **狀態**: Draft
+> **版本**: v1.1
+> **最後更新**: 2026-01-15
+> **狀態**: Active
 
 ---
 
@@ -717,6 +717,74 @@
 
 ---
 
+## P0/P1 輸出欄位定義
+
+> **新增於**: 2026-01-15
+
+以下為 P0/P1 已實作的輸出欄位說明。
+
+### 三大法人指標（INSTITUTIONAL）
+
+| 計算器 | 輸出欄位 | 類型 | 說明 |
+|-------|---------|------|------|
+| ForeignNetCalculator | `foreign_net` | Long | 外資買賣超（股） |
+| | `foreign_net_ma5` | Double | 外資買賣超 5 日均線 |
+| | `foreign_net_ma20` | Double | 外資買賣超 20 日均線 |
+| | `foreign_accumulated_n` | Long | 外資 N 日累計買賣超 |
+| TrustNetCalculator | `trust_net` | Long | 投信買賣超（股） |
+| | `trust_net_ma5` | Double | 投信買賣超 5 日均線 |
+| | `trust_net_ma20` | Double | 投信買賣超 20 日均線 |
+| DealerNetCalculator | `dealer_net` | Long | 自營商買賣超（股） |
+| | `dealer_hedging_net` | Long | 自營商避險買賣超 |
+| | `dealer_proprietary_net` | Long | 自營商自行買賣超 |
+| | `total_net` | Long | 三大法人合計買賣超 |
+| ContinuousDaysCalculator | `foreign_continuous_days` | Integer | 外資連續買超天數（負數為連續賣超） |
+| | `trust_continuous_days` | Integer | 投信連續買超天數 |
+| | `margin_continuous_days` | Integer | 融資連續增加天數 |
+
+### 融資融券指標（MARGIN）
+
+| 計算器 | 輸出欄位 | 類型 | 說明 |
+|-------|---------|------|------|
+| MarginBalanceCalculator | `margin_balance` | Long | 融資餘額（張） |
+| | `margin_change` | Long | 融資增減 |
+| | `margin_usage_rate` | Double | 融資使用率（%） |
+| ShortBalanceCalculator | `short_balance` | Long | 融券餘額（張） |
+| | `short_change` | Long | 融券增減 |
+| MarginShortRatioCalculator | `margin_short_ratio` | Double | 券資比（%） |
+
+### 訊號偵測（SIGNAL）
+
+| 偵測器 | 訊號編號 | 訊號名稱 | 嚴重度 |
+|-------|---------|---------|-------|
+| InstitutionalSignalDetector | CHIP_SIG_001 | 外資大買 | HIGH |
+| | CHIP_SIG_002 | 外資大賣 | HIGH |
+| | CHIP_SIG_003 | 外資連續買超 | MEDIUM |
+| | CHIP_SIG_004 | 外資連續賣超 | MEDIUM |
+| | CHIP_SIG_005 | 投信大買 | HIGH |
+| | CHIP_SIG_006 | 投信連續買超 | MEDIUM |
+| | CHIP_SIG_007 | 三大法人同買 | MEDIUM |
+| | CHIP_SIG_008 | 三大法人同賣 | HIGH |
+| MarginSignalDetector | CHIP_SIG_009 | 融資暴增 | HIGH |
+| | CHIP_SIG_010 | 融資斷頭 | CRITICAL |
+| | CHIP_SIG_011 | 融券大增 | MEDIUM |
+| | CHIP_SIG_012 | 券資比過高 | HIGH |
+| | CHIP_SIG_013 | 融資使用率過高 | HIGH |
+
+### 訊號欄位說明
+
+| 欄位 | 類型 | 說明 |
+|-----|------|------|
+| `signal_id` | String | 訊號編號（CHIP_SIG_XXX） |
+| `signal_name` | String | 訊號中文名稱 |
+| `signal_type` | String | 訊號類型：INSTITUTIONAL, MARGIN |
+| `severity` | String | 嚴重度：CRITICAL, HIGH, MEDIUM, LOW |
+| `value` | Double | 觸發訊號的數值 |
+| `threshold` | Double | 閾值 |
+| `description` | String | 訊號描述文字 |
+
+---
+
 ## 📚 相關文檔
 
 - [M09 功能需求](../functional/M09-籌碼分析功能需求.md)
@@ -726,5 +794,5 @@
 ---
 
 **文件維護者**: 後端工程師
-**最後更新**: 2026-01-11
+**最後更新**: 2026-01-15
 **下次審核**: 2026-03-31

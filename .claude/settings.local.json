@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvnw.cmd compile:*)",
+      "Bash(cmd.exe /c \"mvnw.cmd compile -q\")",
+      "Bash(cmd.exe /c \"mvnw.cmd test -Dtest=*P1*,WMACalculatorTest,AroonCalculatorTest,ROCCalculatorTest,WilliamsRCalculatorTest,CCICalculatorTest,DonchianChannelCalculatorTest,CMFCalculatorTest,PivotPointsCalculatorTest,LinearRegressionCalculatorTest -q\")",
+      "Bash(mvnw.cmd test:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(./mvnw.cmd test:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\fin-shark\\\\src\\\\main\\\\java\\\\com\\\\chris\\\\fin_shark\\\\m11'' -Recurse -Name -Filter ''*.java'' | Sort-Object\")",
+      "Bash(powershell -Command:*)",
+      "Bash(mvnw.cmd clean compile:*)",
+      "Bash(.mvnw.cmd clean compile -q)"
+    ]
+  }
+}

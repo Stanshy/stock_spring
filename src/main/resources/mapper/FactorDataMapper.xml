@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chris.fin_shark.m11.mapper.FactorDataMapper">
+
+    <!-- 載入策略執行所需的因子數據（跨 M06/M07/M08/M09） -->
+    <select id="loadFactorData" resultType="com.chris.fin_shark.m11.dto.FactorDataDTO">
+        SELECT
+            s.stock_id,
+            s.stock_name,
+            s.market_type,
+            s.industry,
+            #{tradeDate} as trade_date,
+
+            -- M06 價量因子
+            sp.close_price,
+            sp.volume,
+            CASE WHEN sp.volume_ma20 > 0
+                 THEN sp.volume::numeric / sp.volume_ma20
+                 ELSE NULL
+            END as volume_ratio,
+            CASE WHEN sp.prev_close > 0
+                 THEN (sp.close_price - sp.prev_close) / sp.prev_close * 100
+                 ELSE NULL
+            END as price_change_pct,
+
+            -- M07 技術指標
+            ti.rsi_14,
+            ti.macd_histogram,
+            ti.kd_k,
+            ti.kd_d,
+            ti.ma5,
+            ti.ma20,
+            ti.ma60,
+            ti.bollinger_upper,
+            ti.bollinger_lower,
+            ti.bollinger_middle,
+
+            -- M08 財務指標
+            fi.pe_ratio,
+            fi.pb_ratio,
+            fi.roe,
+            fi.eps,
+            fi.dividend_yield,
+            fi.revenue_growth_yoy,
+            fi.profit_margin,
+
+            -- M09 籌碼指標
+            ca.foreign_net,
+            ca.foreign_continuous_days,
+            ca.foreign_accumulated_20d,
+            ca.trust_net,
+            ca.trust_continuous_days,
+            ca.dealer_net,
+            ca.total_net,
+            ca.margin_balance,
+            ca.margin_change,
+            ca.margin_short_ratio,
+            ca.chip_score
+
+        FROM stocks s
+        LEFT JOIN stock_prices sp
+            ON s.stock_id = sp.stock_id AND sp.trade_date = #{tradeDate}
+        LEFT JOIN technical_indicators ti
+            ON s.stock_id = ti.stock_id AND ti.trade_date = #{tradeDate}
+        LEFT JOIN fundamental_indicators fi
+            ON s.stock_id = fi.stock_id
+            AND fi.report_date = #{latestReportDate}
+        LEFT JOIN chip_analysis_results ca
+            ON s.stock_id = ca.stock_id AND ca.trade_date = #{tradeDate}
+
+        WHERE s.is_active = true
+        <if test="marketType != null and marketType != ''">
+            AND s.market_type = #{marketType}
+        </if>
+        <if test="minVolume != null and minVolume > 0">
+            AND sp.volume >= #{minVolume}
+        </if>
+        <if test="excludeEtf">
+            AND s.security_type != 'ETF'
+        </if>
+        <if test="stockIds != null and stockIds.size() > 0">
+            AND s.stock_id IN
+            <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+                #{stockId}
+            </foreach>
+        </if>
+        <if test="industries != null and industries.size() > 0">
+            AND s.industry IN
+            <foreach collection="industries" item="industry" open="(" separator="," close=")">
+                #{industry}
+            </foreach>
+        </if>
+        ORDER BY s.stock_id
+    </select>
+
+    <!-- 載入單一股票的因子數據 -->
+    <select id="loadFactorDataForStock" resultType="com.chris.fin_shark.m11.dto.FactorDataDTO">
+        SELECT
+            s.stock_id,
+            s.stock_name,
+            s.market_type,
+            s.industry,
+            #{tradeDate} as trade_date,
+
+            -- M06 價量因子
+            sp.close_price,
+            sp.volume,
+            CASE WHEN sp.volume_ma20 > 0
+                 THEN sp.volume::numeric / sp.volume_ma20
+                 ELSE NULL
+            END as volume_ratio,
+            CASE WHEN sp.prev_close > 0
+                 THEN (sp.close_price - sp.prev_close) / sp.prev_close * 100
+                 ELSE NULL
+            END as price_change_pct,
+
+            -- M07 技術指標
+            ti.rsi_14,
+            ti.macd_histogram,
+            ti.kd_k,
+            ti.kd_d,
+            ti.ma5,
+            ti.ma20,
+            ti.ma60,
+            ti.bollinger_upper,
+            ti.bollinger_lower,
+            ti.bollinger_middle,
+
+            -- M08 財務指標
+            fi.pe_ratio,
+            fi.pb_ratio,
+            fi.roe,
+            fi.eps,
+            fi.dividend_yield,
+            fi.revenue_growth_yoy,
+            fi.profit_margin,
+
+            -- M09 籌碼指標
+            ca.foreign_net,
+            ca.foreign_continuous_days,
+            ca.foreign_accumulated_20d,
+            ca.trust_net,
+            ca.trust_continuous_days,
+            ca.dealer_net,
+            ca.total_net,
+            ca.margin_balance,
+            ca.margin_change,
+            ca.margin_short_ratio,
+            ca.chip_score
+
+        FROM stocks s
+        LEFT JOIN stock_prices sp
+            ON s.stock_id = sp.stock_id AND sp.trade_date = #{tradeDate}
+        LEFT JOIN technical_indicators ti
+            ON s.stock_id = ti.stock_id AND ti.trade_date = #{tradeDate}
+        LEFT JOIN fundamental_indicators fi
+            ON s.stock_id = fi.stock_id
+            AND fi.report_date = #{latestReportDate}
+        LEFT JOIN chip_analysis_results ca
+            ON s.stock_id = ca.stock_id AND ca.trade_date = #{tradeDate}
+
+        WHERE s.stock_id = #{stockId}
+    </select>
+
+    <!-- 取得最近的財報日期 -->
+    <select id="getLatestReportDate" resultType="java.time.LocalDate">
+        SELECT MAX(report_date)
+        FROM fundamental_indicators
+        WHERE report_date &lt;= CURRENT_DATE
+    </select>
+
+</mapper>

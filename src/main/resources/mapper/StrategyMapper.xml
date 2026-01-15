@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chris.fin_shark.m11.mapper.StrategyMapper">
+
+    <!-- ==================== 策略定義 ==================== -->
+
+    <!-- 查詢策略清單 -->
+    <select id="selectStrategies" resultType="com.chris.fin_shark.m11.domain.Strategy">
+        SELECT
+            strategy_id,
+            strategy_name,
+            strategy_type,
+            description,
+            current_version,
+            status,
+            is_preset,
+            conditions,
+            parameters,
+            output_config,
+            total_executions,
+            total_signals,
+            last_execution_at,
+            created_by,
+            created_at,
+            updated_at
+        FROM strategies
+        WHERE 1=1
+        <if test="status != null and status != '' and status != 'all'">
+            AND status = #{status}
+        </if>
+        <if test="type != null and type != '' and type != 'all'">
+            AND strategy_type = #{type}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (strategy_name ILIKE '%' || #{keyword} || '%'
+                 OR description ILIKE '%' || #{keyword} || '%')
+        </if>
+        ORDER BY
+        <choose>
+            <when test="sortField == 'name'">strategy_name</when>
+            <when test="sortField == 'type'">strategy_type</when>
+            <when test="sortField == 'signals'">total_signals</when>
+            <when test="sortField == 'updated_at'">updated_at</when>
+            <otherwise>created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection == 'asc'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{page} * #{size}
+    </select>
+
+    <!-- 計算策略總數 -->
+    <select id="countStrategies" resultType="int">
+        SELECT COUNT(*)
+        FROM strategies
+        WHERE 1=1
+        <if test="status != null and status != '' and status != 'all'">
+            AND status = #{status}
+        </if>
+        <if test="type != null and type != '' and type != 'all'">
+            AND strategy_type = #{type}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (strategy_name ILIKE '%' || #{keyword} || '%'
+                 OR description ILIKE '%' || #{keyword} || '%')
+        </if>
+    </select>
+
+    <!-- 根據 ID 查詢策略 -->
+    <select id="selectById" resultType="com.chris.fin_shark.m11.domain.Strategy">
+        SELECT
+            strategy_id,
+            strategy_name,
+            strategy_type,
+            description,
+            current_version,
+            status,
+            is_preset,
+            conditions,
+            parameters,
+            output_config,
+            total_executions,
+            total_signals,
+            last_execution_at,
+            created_by,
+            created_at,
+            updated_at
+        FROM strategies
+        WHERE strategy_id = #{strategyId}
+    </select>
+
+    <!-- 新增策略 -->
+    <insert id="insert">
+        INSERT INTO strategies (
+            strategy_id, strategy_name, strategy_type, description,
+            current_version, status, is_preset,
+            conditions, parameters, output_config,
+            total_executions, total_signals,
+            created_by, created_at, updated_at
+        ) VALUES (
+            #{strategyId}, #{strategyName}, #{strategyType}, #{description},
+            #{currentVersion}, #{status}, #{isPreset},
+            #{conditions, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{parameters, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{outputConfig, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{totalExecutions}, #{totalSignals},
+            #{createdBy}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 更新策略 -->
+    <update id="update">
+        UPDATE strategies
+        SET strategy_name = #{strategyName},
+            description = #{description},
+            current_version = #{currentVersion},
+            conditions = #{conditions, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            parameters = #{parameters, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            output_config = #{outputConfig, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE strategy_id = #{strategyId}
+    </update>
+
+    <!-- 更新策略狀態 -->
+    <update id="updateStatus">
+        UPDATE strategies
+        SET status = #{status},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE strategy_id = #{strategyId}
+    </update>
+
+    <!-- 更新策略統計 -->
+    <update id="updateStatistics">
+        UPDATE strategies
+        SET total_executions = total_executions + 1,
+            total_signals = total_signals + #{signalsGenerated},
+            last_execution_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE strategy_id = #{strategyId}
+    </update>
+
+    <!-- 查詢所有啟用的策略 -->
+    <select id="selectActiveStrategies" resultType="com.chris.fin_shark.m11.domain.Strategy">
+        SELECT
+            strategy_id, strategy_name, strategy_type, description,
+            current_version, status, is_preset,
+            conditions, parameters, output_config,
+            total_executions, total_signals, last_execution_at,
+            created_by, created_at, updated_at
+        FROM strategies
+        WHERE status = 'ACTIVE'
+        ORDER BY strategy_name
+    </select>
+
+    <!-- 查詢預設策略 -->
+    <select id="selectPresetStrategies" resultType="com.chris.fin_shark.m11.domain.Strategy">
+        SELECT
+            strategy_id, strategy_name, strategy_type, description,
+            current_version, status, is_preset,
+            conditions, parameters, output_config,
+            total_executions, total_signals, last_execution_at,
+            created_by, created_at, updated_at
+        FROM strategies
+        WHERE is_preset = true
+        ORDER BY strategy_type, strategy_name
+    </select>
+
+    <!-- ==================== 策略版本 ==================== -->
+
+    <!-- 新增策略版本 -->
+    <insert id="insertVersion">
+        INSERT INTO strategy_versions (
+            strategy_id, version, strategy_name, description,
+            conditions, parameters, output_config,
+            change_summary, created_by, created_at
+        ) VALUES (
+            #{strategyId}, #{version}, #{strategyName}, #{description},
+            #{conditions, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{parameters, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{outputConfig, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{changeSummary}, #{createdBy}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 查詢策略版本歷史 -->
+    <select id="selectVersions" resultType="com.chris.fin_shark.m11.domain.StrategyVersion">
+        SELECT
+            version_id, strategy_id, version, strategy_name, description,
+            conditions, parameters, output_config,
+            change_summary, created_by, created_at
+        FROM strategy_versions
+        WHERE strategy_id = #{strategyId}
+        ORDER BY version DESC
+    </select>
+
+    <!-- ==================== 策略執行 ==================== -->
+
+    <!-- 新增執行記錄 -->
+    <insert id="insertExecution">
+        INSERT INTO strategy_executions (
+            execution_id, strategy_id, strategy_version,
+            execution_date, execution_type, stock_universe,
+            stocks_evaluated, signals_generated,
+            buy_signals, sell_signals, hold_signals,
+            avg_confidence, execution_time_ms, status,
+            diagnostics, started_at
+        ) VALUES (
+            #{executionId}, #{strategyId}, #{strategyVersion},
+            #{executionDate}, #{executionType},
+            #{stockUniverse, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            #{stocksEvaluated}, #{signalsGenerated},
+            #{buySignals}, #{sellSignals}, #{holdSignals},
+            #{avgConfidence}, #{executionTimeMs}, #{status},
+            #{diagnostics, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 更新執行記錄 -->
+    <update id="updateExecution">
+        UPDATE strategy_executions
+        SET stocks_evaluated = #{stocksEvaluated},
+            signals_generated = #{signalsGenerated},
+            buy_signals = #{buySignals},
+            sell_signals = #{sellSignals},
+            hold_signals = #{holdSignals},
+            avg_confidence = #{avgConfidence},
+            execution_time_ms = #{executionTimeMs},
+            status = #{status},
+            error_message = #{errorMessage},
+            diagnostics = #{diagnostics, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+            completed_at = CURRENT_TIMESTAMP
+        WHERE execution_id = #{executionId}
+    </update>
+
+    <!-- 查詢執行記錄 -->
+    <select id="selectExecutionById" resultType="com.chris.fin_shark.m11.domain.StrategyExecution">
+        SELECT
+            execution_id, strategy_id, strategy_version,
+            execution_date, execution_type, stock_universe,
+            stocks_evaluated, signals_generated,
+            buy_signals, sell_signals, hold_signals,
+            avg_confidence, execution_time_ms, status,
+            error_message, diagnostics, started_at, completed_at
+        FROM strategy_executions
+        WHERE execution_id = #{executionId}
+    </select>
+
+    <!-- 查詢策略執行歷史 -->
+    <select id="selectExecutionHistory" resultType="com.chris.fin_shark.m11.domain.StrategyExecution">
+        SELECT
+            execution_id, strategy_id, strategy_version,
+            execution_date, execution_type, stock_universe,
+            stocks_evaluated, signals_generated,
+            buy_signals, sell_signals, hold_signals,
+            avg_confidence, execution_time_ms, status,
+            error_message, diagnostics, started_at, completed_at
+        FROM strategy_executions
+        WHERE strategy_id = #{strategyId}
+        <if test="startDate != null">
+            AND execution_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND execution_date &lt;= #{endDate}
+        </if>
+        ORDER BY execution_date DESC, started_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 計算執行歷史總數 -->
+    <select id="countExecutionHistory" resultType="int">
+        SELECT COUNT(*)
+        FROM strategy_executions
+        WHERE strategy_id = #{strategyId}
+        <if test="startDate != null">
+            AND execution_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND execution_date &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- ==================== 策略信號 ==================== -->
+
+    <!-- 批次新增信號 -->
+    <insert id="batchInsertSignals">
+        INSERT INTO strategy_signals (
+            signal_id, execution_id, strategy_id, strategy_version,
+            stock_id, trade_date, signal_type, confidence_score,
+            matched_conditions, factor_values, is_consumed, created_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.signalId}, #{item.executionId}, #{item.strategyId},
+                #{item.strategyVersion}, #{item.stockId}, #{item.tradeDate},
+                #{item.signalType}, #{item.confidenceScore},
+                #{item.matchedConditions, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+                #{item.factorValues, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+                false, CURRENT_TIMESTAMP
+            )
+        </foreach>
+    </insert>
+
+    <!-- 查詢策略信號 -->
+    <select id="selectSignals" resultType="com.chris.fin_shark.m11.domain.StrategySignal">
+        SELECT
+            signal_id, execution_id, strategy_id, strategy_version,
+            stock_id, trade_date, signal_type, confidence_score,
+            matched_conditions, factor_values,
+            is_consumed, consumed_by, consumed_at, created_at
+        FROM strategy_signals
+        WHERE strategy_id = #{strategyId}
+        <if test="startDate != null">
+            AND trade_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND trade_date &lt;= #{endDate}
+        </if>
+        <if test="signalType != null and signalType != '' and signalType != 'all'">
+            AND signal_type = #{signalType}
+        </if>
+        <if test="stockId != null and stockId != ''">
+            AND stock_id = #{stockId}
+        </if>
+        <if test="minConfidence != null">
+            AND confidence_score >= #{minConfidence}
+        </if>
+        ORDER BY trade_date DESC, confidence_score DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 計算信號總數 -->
+    <select id="countSignals" resultType="int">
+        SELECT COUNT(*)
+        FROM strategy_signals
+        WHERE strategy_id = #{strategyId}
+        <if test="startDate != null">
+            AND trade_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND trade_date &lt;= #{endDate}
+        </if>
+        <if test="signalType != null and signalType != '' and signalType != 'all'">
+            AND signal_type = #{signalType}
+        </if>
+        <if test="stockId != null and stockId != ''">
+            AND stock_id = #{stockId}
+        </if>
+        <if test="minConfidence != null">
+            AND confidence_score >= #{minConfidence}
+        </if>
+    </select>
+
+    <!-- 查詢未消費的信號 -->
+    <select id="selectUnconsumedSignals" resultType="com.chris.fin_shark.m11.domain.StrategySignal">
+        SELECT
+            signal_id, execution_id, strategy_id, strategy_version,
+            stock_id, trade_date, signal_type, confidence_score,
+            matched_conditions, factor_values,
+            is_consumed, consumed_by, consumed_at, created_at
+        FROM strategy_signals
+        WHERE trade_date = #{tradeDate}
+          AND is_consumed = false
+        <if test="strategyId != null and strategyId != ''">
+            AND strategy_id = #{strategyId}
+        </if>
+        <if test="signalType != null and signalType != ''">
+            AND signal_type = #{signalType}
+        </if>
+        <if test="minConfidence != null">
+            AND confidence_score >= #{minConfidence}
+        </if>
+        ORDER BY confidence_score DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 標記信號已消費 -->
+    <update id="markSignalsConsumed">
+        UPDATE strategy_signals
+        SET is_consumed = true,
+            consumed_by = #{consumedBy},
+            consumed_at = CURRENT_TIMESTAMP
+        WHERE signal_id = ANY(#{signalIds}::varchar[])
+          AND trade_date = #{tradeDate}
+    </update>
+
+    <!-- 查詢當日信號統計 -->
+    <select id="countTodaySignals" resultType="int">
+        SELECT COUNT(*)
+        FROM strategy_signals
+        WHERE strategy_id = #{strategyId}
+          AND trade_date = #{tradeDate}
+    </select>
+
+    <!-- ==================== 因子元數據 ==================== -->
+
+    <!-- 查詢所有啟用的因子 -->
+    <select id="selectActiveFactors" resultType="com.chris.fin_shark.m11.domain.FactorMetadata">
+        SELECT
+            factor_id, factor_name, display_name,
+            category, source_module, data_type,
+            value_range, typical_thresholds, supported_operators,
+            default_operator, description, calculation_formula,
+            update_frequency, is_active, created_at, updated_at
+        FROM factor_metadata
+        WHERE is_active = true
+        ORDER BY category, factor_name
+    </select>
+
+    <!-- 根據類別查詢因子 -->
+    <select id="selectFactorsByCategory" resultType="com.chris.fin_shark.m11.domain.FactorMetadata">
+        SELECT
+            factor_id, factor_name, display_name,
+            category, source_module, data_type,
+            value_range, typical_thresholds, supported_operators,
+            default_operator, description, calculation_formula,
+            update_frequency, is_active, created_at, updated_at
+        FROM factor_metadata
+        WHERE is_active = true
+          AND category = #{category}
+        ORDER BY factor_name
+    </select>
+
+    <!-- 根據 ID 查詢因子 -->
+    <select id="selectFactorById" resultType="com.chris.fin_shark.m11.domain.FactorMetadata">
+        SELECT
+            factor_id, factor_name, display_name,
+            category, source_module, data_type,
+            value_range, typical_thresholds, supported_operators,
+            default_operator, description, calculation_formula,
+            update_frequency, is_active, created_at, updated_at
+        FROM factor_metadata
+        WHERE factor_id = #{factorId}
+    </select>
+
+    <!-- 計算啟用的因子數量 -->
+    <select id="countActiveFactors" resultType="int">
+        SELECT COUNT(*)
+        FROM factor_metadata
+        WHERE is_active = true
+    </select>
+
+    <!-- ==================== 維護作業 ==================== -->
+
+    <!-- 更新所有策略的統計資訊 -->
+    <update id="updateAllStatistics">
+        UPDATE strategies s
+        SET
+            total_executions = COALESCE((
+                SELECT COUNT(*)
+                FROM strategy_executions
+                WHERE strategy_id = s.strategy_id
+            ), 0),
+            total_signals = COALESCE((
+                SELECT COUNT(*)
+                FROM strategy_signals
+                WHERE strategy_id = s.strategy_id
+            ), 0),
+            last_execution_at = (
+                SELECT MAX(started_at)
+                FROM strategy_executions
+                WHERE strategy_id = s.strategy_id
+            ),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE status IN ('ACTIVE', 'INACTIVE')
+    </update>
+
+    <!-- 刪除過期的策略信號 -->
+    <delete id="deleteOldSignals">
+        DELETE FROM strategy_signals
+        WHERE trade_date &lt; #{cutoffDate}
+    </delete>
+
+    <!-- 清除過期執行記錄的診斷資訊 -->
+    <update id="clearOldExecutionDiagnostics">
+        UPDATE strategy_executions
+        SET diagnostics = NULL
+        WHERE execution_date &lt; #{cutoffDate}
+          AND diagnostics IS NOT NULL
+    </update>
+
+</mapper>

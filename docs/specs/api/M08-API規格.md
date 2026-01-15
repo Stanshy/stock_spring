@@ -3,7 +3,7 @@
 > **文件編號**: API-M08  
 > **模組名稱**: 基本面分析模組  
 > **版本**: v2.0  
-> **最後更新**: 2025-12-31  
+> **最後更新**: 2026-01-15  
 > **狀態**: Draft
 
 ---
@@ -427,6 +427,102 @@ Content-Type: application/json
 | M08_INDICATOR_001 | 400 | 不支援的指標 | 檢查指標名稱 |
 | M08_JOB_001 | 409 | Job 已在執行中 | 等待當前 Job 完成 |
 | M08_DB_001 | 500 | 資料庫錯誤 | 聯絡系統管理員 |
+
+---
+
+### 4.4 P0 輸出欄位定義
+
+> **新增於**: 2026-01-15
+
+以下為 P0 基礎組已實作的輸出欄位說明：
+
+#### 估值類（Valuation）- 5 個
+
+| 指標 | 輸出欄位 | 類型 | 單位 | 說明 |
+|------|---------|------|------|------|
+| 本益比 | `pe_ratio` | Number | 倍 | 股價 / EPS；虧損時為 null |
+| 股價淨值比 | `pb_ratio` | Number | 倍 | 股價 / 每股淨值；淨值為負時為 null |
+| 股價營收比 | `ps_ratio` | Number | 倍 | 股價 / 每股營收 |
+| 本益成長比 | `peg_ratio` | Number | 倍 | P/E / EPS成長率；成長率 <= 0 時為 null |
+| 企業價值倍數 | `ev_ebitda` | Number | 倍 | (市值 + 負債 - 現金) / EBITDA ✨ NEW |
+
+#### 獲利能力類（Profitability）- 6 個
+
+| 指標 | 輸出欄位 | 類型 | 單位 | 說明 |
+|------|---------|------|------|------|
+| 股東權益報酬率 | `roe` | Number | % | 稅後淨利 / 股東權益 × 100% |
+| 資產報酬率 | `roa` | Number | % | 稅後淨利 / 總資產 × 100% |
+| 毛利率 | `gross_margin` | Number | % | (營收 - 營業成本) / 營收 × 100% |
+| 淨利率 | `net_margin` | Number | % | 稅後淨利 / 營收 × 100% |
+| 營業利益率 | `operating_margin` | Number | % | 營業利益 / 營收 × 100% ✨ NEW |
+| 每股盈餘 | `eps` | Number | 元 | 稅後淨利 / 流通股數 ✨ NEW |
+
+#### 財務結構類（Financial Structure）- 3 個
+
+| 指標 | 輸出欄位 | 類型 | 單位 | 說明 |
+|------|---------|------|------|------|
+| 負債比率 | `debt_ratio` | Number | % | 總負債 / 總資產 × 100% |
+| 權益比率 | `equity_ratio` | Number | % | 股東權益 / 總資產 × 100% |
+| 負債權益比 | `debt_to_equity` | Number | 倍 | 總負債 / 股東權益 ✨ NEW |
+
+#### 償債能力類（Solvency）- 3 個
+
+| 指標 | 輸出欄位 | 類型 | 單位 | 說明 |
+|------|---------|------|------|------|
+| 流動比率 | `current_ratio` | Number | 倍 | 流動資產 / 流動負債 |
+| 速動比率 | `quick_ratio` | Number | 倍 | (流動資產 - 存貨) / 流動負債 |
+| 利息保障倍數 | `interest_coverage` | Number | 倍 | EBIT / 利息費用；無利息時為 999.99 ✨ NEW |
+
+#### 現金流量類（Cash Flow）- 3 個
+
+| 指標 | 輸出欄位 | 類型 | 單位 | 說明 |
+|------|---------|------|------|------|
+| 自由現金流 | `free_cash_flow` / `fcf` | Number | 元 | 營運現金流 - 資本支出；可為負 |
+| 自由現金流殖利率 | `fcf_yield` | Number | % | FCF / 市值 × 100% |
+| 營運現金流比率 | `ocf_ratio` | Number | 倍 | 營運現金流 / 流動負債 ✨ NEW |
+
+#### JSONB 結構欄位
+
+API 回應中的 JSONB 欄位結構（對應 `fundamental_indicators` 表）：
+
+```json
+{
+  "valuation_indicators": {
+    "pe_ratio": 18.50,
+    "pb_ratio": 3.20,
+    "ps_ratio": 4.50,
+    "peg_ratio": 1.25
+  },
+  "profitability_indicators": {
+    "roe": 26.70,
+    "roa": 18.70,
+    "gross_margin": 53.50,
+    "net_margin": 41.20
+  },
+  "financial_structure_indicators": {
+    "debt_ratio": 26.00,
+    "equity_ratio": 74.00
+  },
+  "solvency_indicators": {
+    "current_ratio": 2.10,
+    "quick_ratio": 1.85
+  },
+  "cash_flow_indicators": {
+    "free_cash_flow": 700000000000,
+    "fcf_yield": 4.67
+  }
+}
+```
+
+#### 數值範圍與異常處理
+
+| 欄位 | 正常範圍 | 異常處理 |
+|------|---------|---------|
+| pe_ratio | > 0 | EPS <= 0 時返回 null |
+| pb_ratio | > 0 | 淨值 <= 0 時返回 null |
+| roe | -100% ~ 100% | > 100% 時標記警告 |
+| debt_ratio | 0% ~ 100% | > 100% 表示淨值為負 |
+| current_ratio | > 0 | 流動負債 = 0 時返回 null |
 
 ---
 

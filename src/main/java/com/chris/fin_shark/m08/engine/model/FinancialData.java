@@ -86,6 +86,21 @@ public class FinancialData {
     /** 每股淨值 */
     private BigDecimal bookValuePerShare;
 
+    /** EBITDA（千元）- 稅前息前折舊攤銷前盈餘 */
+    private BigDecimal ebitda;
+
+    /** EBIT（千元）- 稅前息前盈餘 */
+    private BigDecimal ebit;
+
+    /** 利息費用（千元） */
+    private BigDecimal interestExpense;
+
+    /** 存貨（千元） */
+    private BigDecimal inventory;
+
+    /** 現金及約當現金（千元） */
+    private BigDecimal cashAndEquivalents;
+
     /** 流通股數（股） */
     private Long outstandingShares;
 

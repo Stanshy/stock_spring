@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chris.fin_shark.m09.mapper.ChipAnalysisMapper">
+
+    <!-- 批次 UPSERT 籌碼分析結果 -->
+    <insert id="batchUpsertResults" parameterType="list">
+        INSERT INTO chip_analysis_results (
+            stock_id, trade_date, foreign_net, foreign_net_ma5, foreign_net_ma20,
+            foreign_continuous_days, foreign_accumulated_20d, trust_net, trust_net_ma5,
+            trust_continuous_days, dealer_net, total_net, margin_balance, margin_change,
+            margin_usage_rate, margin_continuous_days, short_balance, short_change,
+            margin_short_ratio, institutional_ratio, concentration_trend,
+            institutional_indicators, margin_indicators, concentration_indicators,
+            chip_score, chip_grade, calculation_time_ms
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.stockId}, #{item.tradeDate}, #{item.foreignNet},
+                #{item.foreignNetMa5}, #{item.foreignNetMa20},
+                #{item.foreignContinuousDays}, #{item.foreignAccumulated20d},
+                #{item.trustNet}, #{item.trustNetMa5}, #{item.trustContinuousDays},
+                #{item.dealerNet}, #{item.totalNet}, #{item.marginBalance},
+                #{item.marginChange}, #{item.marginUsageRate},
+                #{item.marginContinuousDays}, #{item.shortBalance}, #{item.shortChange},
+                #{item.marginShortRatio}, #{item.institutionalRatio},
+                #{item.concentrationTrend},
+                #{item.institutionalIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+                #{item.marginIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+                #{item.concentrationIndicators, typeHandler=com.chris.fin_shark.common.handler.JsonbTypeHandler},
+                #{item.chipScore}, #{item.chipGrade}, #{item.calculationTimeMs}
+            )
+        </foreach>
+        ON CONFLICT (stock_id, trade_date) DO UPDATE SET
+            foreign_net = EXCLUDED.foreign_net,
+            foreign_net_ma5 = EXCLUDED.foreign_net_ma5,
+            foreign_net_ma20 = EXCLUDED.foreign_net_ma20,
+            foreign_continuous_days = EXCLUDED.foreign_continuous_days,
+            foreign_accumulated_20d = EXCLUDED.foreign_accumulated_20d,
+            trust_net = EXCLUDED.trust_net,
+            trust_net_ma5 = EXCLUDED.trust_net_ma5,
+            trust_continuous_days = EXCLUDED.trust_continuous_days,
+            dealer_net = EXCLUDED.dealer_net,
+            total_net = EXCLUDED.total_net,
+            margin_balance = EXCLUDED.margin_balance,
+            margin_change = EXCLUDED.margin_change,
+            margin_usage_rate = EXCLUDED.margin_usage_rate,
+            margin_continuous_days = EXCLUDED.margin_continuous_days,
+            short_balance = EXCLUDED.short_balance,
+            short_change = EXCLUDED.short_change,
+            margin_short_ratio = EXCLUDED.margin_short_ratio,
+            institutional_ratio = EXCLUDED.institutional_ratio,
+            concentration_trend = EXCLUDED.concentration_trend,
+            institutional_indicators = EXCLUDED.institutional_indicators,
+            margin_indicators = EXCLUDED.margin_indicators,
+            concentration_indicators = EXCLUDED.concentration_indicators,
+            chip_score = EXCLUDED.chip_score,
+            chip_grade = EXCLUDED.chip_grade,
+            calculation_time_ms = EXCLUDED.calculation_time_ms,
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 外資買超排行 -->
+    <select id="selectForeignBuyRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.foreign_net DESC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.foreign_net as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.foreign_net > 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.foreign_net DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 外資賣超排行 -->
+    <select id="selectForeignSellRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.foreign_net ASC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.foreign_net as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.foreign_net &lt; 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.foreign_net ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 投信買超排行 -->
+    <select id="selectTrustBuyRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.trust_net DESC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.trust_net as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.trust_net > 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.trust_net DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 外資連續買超排行 -->
+    <select id="selectForeignContinuousBuyRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.foreign_continuous_days DESC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.foreign_continuous_days as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.foreign_continuous_days > 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.foreign_continuous_days DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 融資增加排行 -->
+    <select id="selectMarginIncreaseRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.margin_change DESC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.margin_change as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.margin_change > 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.margin_change DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 券資比排行 -->
+    <select id="selectShortRatioRanking" resultType="com.chris.fin_shark.m09.dto.ChipRankingDTO">
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY c.margin_short_ratio DESC) as rank,
+            c.stock_id as stockId,
+            s.stock_name as stockName,
+            s.market_type as marketType,
+            s.industry,
+            c.margin_short_ratio as value,
+            sp.close_price as closePrice,
+            sp.volume
+        FROM chip_analysis_results c
+        JOIN stocks s ON c.stock_id = s.stock_id
+        LEFT JOIN stock_prices sp ON c.stock_id = sp.stock_id AND c.trade_date = sp.trade_date
+        WHERE c.trade_date = #{tradeDate}
+          AND c.margin_short_ratio > 0
+          AND s.is_active = true
+          <if test="marketType != null">
+              AND s.market_type = #{marketType}
+          </if>
+        ORDER BY c.margin_short_ratio DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 批次查詢指定股票和日期的籌碼分析結果 -->
+    <select id="findByStockIdsAndDate" resultType="com.chris.fin_shark.m09.domain.ChipAnalysisResult">
+        SELECT *
+        FROM chip_analysis_results
+        WHERE trade_date = #{date}
+          AND stock_id IN
+        <foreach collection="stockIds" item="stockId" open="(" separator="," close=")">
+            #{stockId}
+        </foreach>
+    </select>
+
+    <!-- 每日籌碼統計摘要 -->
+    <select id="selectDailySummary" resultType="map">
+        SELECT
+            COUNT(*) as total_stocks,
+            SUM(CASE WHEN foreign_net > 0 THEN 1 ELSE 0 END) as foreign_buy_count,
+            SUM(CASE WHEN foreign_net &lt; 0 THEN 1 ELSE 0 END) as foreign_sell_count,
+            SUM(CASE WHEN trust_net > 0 THEN 1 ELSE 0 END) as trust_buy_count,
+            SUM(CASE WHEN total_net > 0 THEN 1 ELSE 0 END) as institutional_buy_count,
+            SUM(CASE WHEN margin_change > 0 THEN 1 ELSE 0 END) as margin_increase_count,
+            SUM(CASE WHEN margin_change &lt; 0 THEN 1 ELSE 0 END) as margin_decrease_count,
+            AVG(margin_short_ratio) as avg_short_ratio
+        FROM chip_analysis_results
+        WHERE trade_date = #{tradeDate}
+    </select>
+
+</mapper>
